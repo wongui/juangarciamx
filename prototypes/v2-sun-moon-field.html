@@ -552,11 +552,23 @@ function setMode(m){const w=m==='ocean';if(m==='night')night=true;if(m==='day')n
   hint.textContent=w?'(Move) (Drag) — the water follows you':m==='night'?'(Move) (Drag) — the fireflies follow you':'(Move) (Drag) — the dragonflies follow you';}
 setMode(water?'ocean':night?'night':'day');bDay.onclick=()=>setMode('day');bNight.onclick=()=>setMode('night');bWater.onclick=()=>setMode('ocean');
 cv.addEventListener('pointermove',e=>{ptr.nx=e.clientX/innerWidth*2-1;ptr.ny=1-e.clientY/innerHeight*2;ptr.last=performance.now();
-  if(ptr.down&&!ui.about){bake.lastDrag=performance.now();const dx=e.clientX-ptr.lx;orbit-=dx*0.0025;orbitV=-dx*0.0025*18;ptr.lx=e.clientX;}});
+  // mouse/pen drag orbits the scene; touch drag only steers the swarm (on phones the orbit follows the device, see gyro below)
+  if(ptr.down&&!ui.about&&e.pointerType!=='touch'){bake.lastDrag=performance.now();const dx=e.clientX-ptr.lx;orbit-=dx*0.0025;orbitV=-dx*0.0025*18;ptr.lx=e.clientX;}});
 cv.addEventListener('pointerdown',e=>{ptr.down=true;ptr.dx0=e.clientX;ptr.dy0=e.clientY;ptr.dt0=performance.now();ptr.lx=e.clientX;ptr.nx=e.clientX/innerWidth*2-1;ptr.ny=1-e.clientY/innerHeight*2;ptr.last=performance.now();cv.setPointerCapture(e.pointerId);});
 addEventListener('pointerup',e=>{const wasDown=ptr.down;ptr.down=false;
   if(wasDown&&figHover&&!ui.about&&Math.hypot(e.clientX-ptr.dx0,e.clientY-ptr.dy0)<6&&performance.now()-ptr.dt0<600){
     figF=1;orbitV=0;setTimeout(()=>setAbout(true),160);}});
+/* gyro: physically turning the phone orbits the environment (touch gestures don't). iOS asks permission on the first tap. */
+const gyro={a0:null,tgt:0,v:0,on:false};
+function onTurn(e){if(reduce||e.alpha==null)return;if(gyro.a0===null)gyro.a0=e.alpha;
+  const d=((e.alpha-gyro.a0+540)%360)-180;gyro.tgt=d*Math.PI/180*GYRO_GAIN;gyro.on=true;}
+const GYRO_GAIN=0.6;   // 1 = scene turns as far as the phone; sign is flipped by changing this to a negative
+function startGyro(){if(gyro.armed)return;gyro.armed=true;
+  const go=()=>addEventListener('deviceorientation',onTurn);
+  if(typeof DeviceOrientationEvent!=='undefined'&&typeof DeviceOrientationEvent.requestPermission==='function'){
+    DeviceOrientationEvent.requestPermission().then(r=>{if(r==='granted')go();else gyro.armed=false;}).catch(()=>{gyro.armed=false;});}
+  else go();}
+if(matchMedia('(pointer:coarse)').matches){addEventListener('click',startGyro,{once:false});}
 const about=document.getElementById('about'),toast=document.getElementById('toast');let tt;
 function setAbout(on){ui.about=on;about.classList.toggle('on',on);document.body.classList.toggle('about',on);about.setAttribute('aria-hidden',!on);if(on)about.querySelector('.close').focus();}
 document.querySelectorAll('.nav button').forEach(b=>b.addEventListener('click',()=>{const k=b.dataset.k;
@@ -580,7 +592,8 @@ function frameInner(now){const dt=Math.min((now-prev)/1000,0.05);prev=now;const 
   if(wat){SUN=RISE_D;SC=RISE.sun;SK=RISE.sky;BL=RISE.bodyL;EXPO=RISE.exp;}
   if(!ptr.down)orbit+=orbitV*dt;orbitV*=Math.exp(-dt*(ptr.down?12:4.5));
   par.x+=(ptr.nx-par.x)*(1-Math.exp(-dt*0.8));par.y+=(ptr.ny-par.y)*(1-Math.exp(-dt*0.8));
-  const th=THETA0+(reduce?0:Math.sin(t*0.012)*0.16)+orbit,rad=15;
+  gyro.v+=(gyro.tgt-gyro.v)*(1-Math.exp(-dt*5));   // smooth the sensor so the scene glides instead of jittering
+  const th=THETA0+(reduce?0:Math.sin(t*0.012)*0.16)+orbit+gyro.v,rad=15;
   let eye=[Math.sin(th)*rad,1.05+par.y*0.12,Math.cos(th)*rad];
   const side=[Math.cos(th),0,-Math.sin(th)],fwd=[-Math.sin(th),0,-Math.cos(th)];
   let tg=[side[0]*par.x*0.2,3.4,side[2]*par.x*0.2],fov=1.0;
