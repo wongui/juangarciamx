@@ -2,24 +2,24 @@
 <html lang="en">
 <head>
 <meta charset="utf-8">
-<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <title>Juangarcia(mx) — Sun &amp; Moon field · prototype v2</title>
 <style>
   :root{ --ink:#fff; --mute:rgba(255,255,255,.82); --acc:#fff; }
   *{box-sizing:border-box;margin:0;padding:0}
   html,body{height:100%;background:#3a6fb5;overflow:hidden;color:var(--ink);
     font-family:"Helvetica Neue",Helvetica,Inter,Arial,sans-serif;-webkit-font-smoothing:antialiased}
-  body.night{background:#05060a}
-  canvas{position:fixed;inset:0;width:100%;height:100%;display:block;opacity:0;transition:opacity 2s ease;touch-action:none;cursor:grab}
+  body.night{background:#05060a} body.ocean{background:#8a7398}
+  canvas{position:fixed;top:0;left:0;width:100%;height:100vh;height:100lvh;display:block;opacity:0;transition:opacity 2s ease;touch-action:none;cursor:grab}
   canvas:active{cursor:grabbing}
   body.ready canvas{opacity:1}
-  .ui{position:fixed;inset:0;pointer-events:none;padding:28px 32px;display:grid;
+  .ui{position:fixed;inset:0;pointer-events:none;padding:calc(28px + env(safe-area-inset-top)) calc(32px + env(safe-area-inset-right)) calc(28px + env(safe-area-inset-bottom)) calc(32px + env(safe-area-inset-left));display:grid;
     grid-template-columns:1fr auto 1fr;grid-template-rows:auto 1fr auto;gap:12px;text-shadow:0 1px 12px rgba(10,30,60,.28)}
   .ui > *{pointer-events:auto}
   .brand{grid-column:1;grid-row:1;align-self:start}
-  .brand .name{font-size:22px;font-weight:600;letter-spacing:-.02em}
-  .brand .paren{font-size:22px;font-weight:300;color:rgba(255,255,255,.72);margin-left:2px}
-  .brand p{margin-top:10px;font-size:13px;line-height:1.45;color:var(--mute);max-width:260px}
+  .brand .name{font-size:34px;font-weight:600;letter-spacing:-.025em;line-height:1.05}
+  .brand .paren{font-size:34px;font-weight:300;line-height:1.05;color:rgba(255,255,255,.72);margin-left:3px}
+  .brand p{margin-top:12px;font-size:13px;line-height:1.45;color:var(--mute);max-width:260px}
   .right{grid-column:3;grid-row:1;justify-self:end;display:flex;flex-direction:column;align-items:flex-end;gap:14px}
   .meta{text-align:right;font-size:12px;line-height:1.6;color:var(--mute)}
   .glass{background:transparent;border-radius:999px}
@@ -34,7 +34,6 @@
   .nav button:hover,.nav button:focus-visible{background:rgba(255,255,255,.2)}
   body.night .nav button:hover,body.night .nav button:focus-visible{background:rgba(255,255,255,.16);color:var(--acc)}
   .nav button:focus-visible{outline:1px solid #fff}
-  .hint{grid-column:1;grid-row:3;align-self:end;font-size:12px;color:var(--mute)}
   .proto{grid-column:3;grid-row:3;align-self:end;justify-self:end;font-size:11px;color:rgba(255,255,255,.6);text-align:right}
   .toast{position:fixed;left:50%;bottom:92px;transform:translate(-50%,8px);font-size:12px;color:#fff;opacity:0;transition:all .4s;pointer-events:none;text-shadow:0 1px 10px rgba(0,0,0,.4)}
   .toast.on{opacity:1;transform:translate(-50%,0)}
@@ -69,9 +68,9 @@
   body.night .nav button:hover,body.night .mode button:not([aria-pressed="true"]):hover{background:rgba(255,255,255,.14);color:#fff}
   #err{position:fixed;left:20px;top:80px;right:20px;font:12px/1.4 monospace;color:#f66;white-space:pre-wrap}
   @media (max-width:700px){
-    .ui{padding:20px;grid-template-columns:1fr 1fr;grid-template-rows:auto 1fr auto auto}
+    .ui{padding:calc(20px + env(safe-area-inset-top)) calc(20px + env(safe-area-inset-right)) calc(20px + env(safe-area-inset-bottom)) calc(20px + env(safe-area-inset-left));grid-template-columns:1fr 1fr;grid-template-rows:auto 1fr auto auto}
     .right{grid-column:2} .nav{grid-column:1 / span 2;grid-row:3} .nav button{padding:9px 12px;font-size:13px}
-    .hint{grid-column:1;grid-row:4} .proto{grid-column:2;grid-row:4} .brand p{display:none} .meta{display:none}
+    .brand p{display:none} .brand .name,.brand .paren{font-size:28px}
   }
 </style>
 </head>
@@ -79,9 +78,8 @@
 <canvas id="c" aria-label="A field with a giant glowing buried sculpture. Day: dragonflies under a blue sky. Night: fireflies under the moon."></canvas>
 <div class="ui">
   <div class="brand"><span class="name">Juangarcia</span><span class="paren">(mx)</span>
-    <p>Designing what's next — and building it. Visual design, 3D and code, grounded in people.</p></div>
+    <p>Designing what's next, and building it. Visual design, 3D and code, grounded in people.</p></div>
   <div class="right">
-    <div class="meta">(Senior Visual Designer)<br>(From Mexico, based in San Francisco)</div>
     <div class="mode glass" role="group" aria-label="Scene mode">
       <button id="mDay" aria-pressed="true" aria-label="Day" title="Day"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><circle cx="12" cy="12" r="4.2"/><path d="M12 2.5v2.2M12 19.3v2.2M2.5 12h2.2M19.3 12h2.2M5.3 5.3l1.6 1.6M17.1 17.1l1.6 1.6M5.3 18.7l1.6-1.6M17.1 6.9l1.6-1.6"/></svg></button>
       <button id="mNight" aria-pressed="false" aria-label="Night" title="Night"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"><path d="M20 14.5A8.5 8.5 0 0 1 9.5 4a8.5 8.5 0 1 0 10.5 10.5z"/></svg></button>
@@ -91,8 +89,6 @@
   <nav class="nav glass" aria-label="Main">
     <button data-k="lab"><span class="w"><span class="p l" aria-hidden="true">(</span>Lab<span class="p r" aria-hidden="true">)</span></span></button><button data-k="work"><span class="w"><span class="p l" aria-hidden="true">(</span>Work<span class="p r" aria-hidden="true">)</span></span></button><button data-k="art"><span class="w"><span class="p l" aria-hidden="true">(</span>Art<span class="p r" aria-hidden="true">)</span></span></button><button data-k="about"><span class="w"><span class="p l" aria-hidden="true">(</span>About<span class="p r" aria-hidden="true">)</span></span></button>
   </nav>
-  <div class="hint" id="hint">(Move) (Drag) — the dragonflies follow you</div>
-  <div class="proto">Prototype v2 · placeholder dragonflies, fireflies &amp; grass blades</div>
 </div>
 <div class="toast" id="toast"></div>
 <section id="about" aria-hidden="true" role="dialog" aria-label="About Juan" aria-modal="true">
@@ -586,7 +582,8 @@ function rt(w,h){const t=gl.createTexture();gl.bindTexture(gl.TEXTURE_2D,t);gl.t
   gl.texParameteri(gl.TEXTURE_2D,gl.TEXTURE_MIN_FILTER,gl.LINEAR);gl.texParameteri(gl.TEXTURE_2D,gl.TEXTURE_MAG_FILTER,gl.LINEAR);
   gl.texParameteri(gl.TEXTURE_2D,gl.TEXTURE_WRAP_S,gl.CLAMP_TO_EDGE);gl.texParameteri(gl.TEXTURE_2D,gl.TEXTURE_WRAP_T,gl.CLAMP_TO_EDGE);
   const f=gl.createFramebuffer();gl.bindFramebuffer(gl.FRAMEBUFFER,f);gl.framebufferTexture2D(gl.FRAMEBUFFER,gl.COLOR_ATTACHMENT0,gl.TEXTURE_2D,t,0);return {t,f,w,h};}
-function resize(){const dpr=Math.min(devicePixelRatio||1,mobile?1.5:1.75);const w=Math.floor(innerWidth*dpr),h=Math.floor(innerHeight*dpr);
+let CR=cv.getBoundingClientRect();
+function resize(){CR=cv.getBoundingClientRect();const dpr=Math.min(devicePixelRatio||1,mobile?1.5:1.75);const w=Math.floor(CR.width*dpr),h=Math.floor(CR.height*dpr);
   if(w===W&&h===H)return;W=cv.width=w;H=cv.height=h;
   owned.splice(0).forEach(o=>{o.t?(gl.deleteTexture(o.t),gl.deleteFramebuffer(o.f)):o.rb?gl.deleteRenderbuffer(o.rb):gl.deleteFramebuffer(o.fb);});
   const smp=Math.min(4,gl.getParameter(gl.MAX_SAMPLES));
@@ -610,17 +607,16 @@ const REST=[0.12,0.24],LIFT=[0.32,0.64],lift=REST.slice(),liftV=[0,0];   // inne
 let figH=0,figF=0,figHover=false,orbit=0,orbitV=0,ptrA=0,ptrW=[0,0,0],ptr3=[0,1.5,0],gHit=0,glow=1,swarm=[0,1,0,0];
 const hr=new Date().getHours();let night=/night/.test(location.hash)||(!/day|ocean/.test(location.hash)&&(hr<6||hr>=19)),mode=night?1:0;
 let water=/ocean/.test(location.hash),wat=water?1:0;const trans={v:1,ph:null};if(water)mode=0;
-const bDay=document.getElementById('mDay'),bNight=document.getElementById('mNight'),bWater=document.getElementById('mWater'),hint=document.getElementById('hint');
+const bDay=document.getElementById('mDay'),bNight=document.getElementById('mNight'),bWater=document.getElementById('mWater');
 function setMode(m){const w=m==='ocean';if(m==='night')night=true;if(m==='day')night=false;
   if(w!==water){water=w;trans.ph='out';}
   bDay.setAttribute('aria-pressed',m==='day');bNight.setAttribute('aria-pressed',m==='night');bWater.setAttribute('aria-pressed',w);
-  document.body.classList.toggle('night',m==='night');document.body.classList.toggle('ocean',w);
-  hint.textContent=w?'(Move) (Drag) — the water follows you':m==='night'?'(Move) (Drag) — the fireflies follow you':'(Move) (Drag) — the dragonflies follow you';}
+  document.body.classList.toggle('night',m==='night');document.body.classList.toggle('ocean',w);}
 setMode(water?'ocean':night?'night':'day');bDay.onclick=()=>setMode('day');bNight.onclick=()=>setMode('night');bWater.onclick=()=>setMode('ocean');
-cv.addEventListener('pointermove',e=>{ptr.nx=e.clientX/innerWidth*2-1;ptr.ny=1-e.clientY/innerHeight*2;ptr.last=performance.now();
+cv.addEventListener('pointermove',e=>{ptr.nx=(e.clientX-CR.left)/CR.width*2-1;ptr.ny=1-(e.clientY-CR.top)/CR.height*2;ptr.last=performance.now();
   // mouse/pen drag orbits the scene; touch drag only steers the swarm (on phones the orbit follows the device, see gyro below)
   if(ptr.down&&!ui.about&&e.pointerType!=='touch'){bake.lastDrag=performance.now();const dx=e.clientX-ptr.lx;orbit-=dx*0.0025;orbitV=-dx*0.0025*18;ptr.lx=e.clientX;}});
-cv.addEventListener('pointerdown',e=>{ptr.down=true;ptr.dx0=e.clientX;ptr.dy0=e.clientY;ptr.dt0=performance.now();ptr.lx=e.clientX;ptr.nx=e.clientX/innerWidth*2-1;ptr.ny=1-e.clientY/innerHeight*2;ptr.last=performance.now();cv.setPointerCapture(e.pointerId);});
+cv.addEventListener('pointerdown',e=>{ptr.down=true;ptr.dx0=e.clientX;ptr.dy0=e.clientY;ptr.dt0=performance.now();ptr.lx=e.clientX;ptr.nx=(e.clientX-CR.left)/CR.width*2-1;ptr.ny=1-(e.clientY-CR.top)/CR.height*2;ptr.last=performance.now();cv.setPointerCapture(e.pointerId);});
 addEventListener('pointerup',e=>{const wasDown=ptr.down;ptr.down=false;
   if(wasDown&&figHover&&!ui.about&&Math.hypot(e.clientX-ptr.dx0,e.clientY-ptr.dy0)<6&&performance.now()-ptr.dt0<600){
     figF=1;orbitV=0;setTimeout(()=>setAbout(true),160);}});
@@ -793,9 +789,9 @@ function frameInner(now){const dt=Math.min((now-prev)/1000,0.05);prev=now;const 
   fs(P.blur,frost[0],u=>{tx(u.uT,0,scene.t);gl.uniform2f(u.uDir,0,0);});
   for(let k=0;k<3;k++){fs(P.blur,frost[1],u=>{tx(u.uT,0,frost[0].t);gl.uniform2f(u.uDir,1.6/frost[0].w,0);});fs(P.blur,frost[0],u=>{tx(u.uT,0,frost[1].t);gl.uniform2f(u.uDir,0,1.6/frost[0].h);});}
   // where the glass sits: measured from the live DOM each frame (follows CSS transitions)
-  const GR=new Float32Array(16),GP=new Float32Array(16);let gn=0;const sc=W/innerWidth,dark=document.body.classList.contains('night')?1:0;
+  const GR=new Float32Array(16),GP=new Float32Array(16);let gn=0;const sc=W/CR.width,dark=document.body.classList.contains('night')?1:0;
   for(const [el,par,tint] of GLASS){if(gn>=4)break;const op=parseFloat(getComputedStyle(par).opacity);if(op<0.01)continue;const r=el.getBoundingClientRect();if(r.width<2)continue;
-    GR.set([r.left*sc,H-r.bottom*sc,r.width*sc,r.height*sc],gn*4);GP.set([parseFloat(getComputedStyle(el).borderTopLeftRadius)*sc,op,dark,tint],gn*4);gn++;}
+    GR.set([(r.left-CR.left)*sc,H-(r.bottom-CR.top)*sc,r.width*sc,r.height*sc],gn*4);GP.set([parseFloat(getComputedStyle(el).borderTopLeftRadius)*sc,op,dark,tint],gn*4);gn++;}
   const fade=Math.min(1,(now-t0)/1600)*(0.08+0.92*trans.v*trans.v*(3-2*trans.v));
   fs(P.comp,null,u=>{tx(u.uS,0,scene.t);tx(u.uB0,1,bloom[0][0].t);tx(u.uB1,2,bloom[1][0].t);tx(u.uB2,3,bloom[2][0].t);tx(u.uB3,4,bloom[3][0].t);
     gl.uniform1f(u.uTime,t);gl.uniform1f(u.uDim,ui.dim*0.25);gl.uniform1f(u.uFade,fade);gl.uniform1f(u.uExp,EXPO);gl.uniform2f(u.uRes,W,H);tx(u.uF,5,frost[0].t);gl.uniform1f(u.uDpr,sc);gl.uniform4fv(u.uGR,GR);gl.uniform4fv(u.uGP,GP);gl.uniform1i(u.uGN,gn);});
