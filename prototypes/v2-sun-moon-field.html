@@ -247,14 +247,15 @@ const P={
    else if(uLayer<1.5){h*=smoothstep(11.,14.5,length(b-uTC))*(1.-smoothstep(16.,34.,length(b-uCam.xz)));wm=2.6;h*=0.9;}
    else{h*=step(rk,1.-smoothstep(uTile*0.3,uTile*0.49,dc));}
    // grass stops exactly where the sculpture meets the ground (body sliced at blade height, tools/footprint_mind.py)
-   {vec2 m=(b+uMaskE)/(2.*uMaskE);float fd=(m.x>0.&&m.y>0.&&m.x<1.&&m.y<1.)?texture(uMask,m).r*2.5:2.5;h*=smoothstep(0.02,0.1,fd);}
+   // blades shorten over the last few cm so none climb the body (wider margin on phones, where blades are sparser and wider)
+   vec2 mm=(b+uMaskE)/(2.*uMaskE);float fd=(mm.x>0.&&mm.y>0.&&mm.x<1.&&mm.y<1.)?texture(uMask,mm).r*2.5:2.5;h*=smoothstep(0.02,${mobile?'0.45':'0.18'},fd);
    float pch=noise(b*0.35);h*=0.7+0.6*pch;
    vec2 ac=vec2(cos(aI.z),sin(aI.z));
    float n=noise(b*0.25+vec2(uTime*0.45,uTime*0.25));
    float gust=(n-0.45)*0.9+sin(uTime*2.3+b.x*1.3+b.y*0.9+aR*6.283)*0.07;
    vec2 wd=normalize(vec2(1.,0.4));vec2 tp=b-uPtr.xy;float dp=length(tp);
    float push=uPtr.z*(1.-smoothstep(0.,0.9,dp));vec2 pd=dp>1e-3?tp/dp:vec2(0.);
-   vec2 lean=wd*gust*0.5+pd*push*1.4+vec2(-ac.y,ac.x)*(aR-0.5)*0.5;
+   vec2 lean=(wd*gust*0.5+pd*push*1.4+vec2(-ac.y,ac.x)*(aR-0.5)*0.5)*smoothstep(0.,0.6,fd);   // calm next to the body: tips don't tilt over it
    float w=(1.-t*0.9)*0.021*wm*(0.7+0.6*aR)*(1.+0.045*length(b-uCam.xz));
    vec3 p=vec3(b.x+ac.x*aB.x*w,0.,b.y+ac.y*aB.x*w);p.xz+=lean*t*t*h;
    p.y=groundH(b)+t*h*(1.-0.4*min(length(lean),1.)*t);
