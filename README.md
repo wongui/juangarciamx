@@ -7,6 +7,8 @@ Replaces the Framer site at juangarcia.mx. Lab first, portfolio second.
 - **Landing direction chosen:** the *Sun & Moon field*: a giant glowing sculpture buried to the chest in a grass field,
   rolling grass hills, day (sun, blue sky, dragonflies) ↔ after-sunset (crescent moon, blue-hour sky, fireflies).
 - **Current prototype:** `prototypes/v2-sun-moon-field.html` (open in Chrome/Safari, no server needed).
+- **Live:** https://wongui.github.io/juangarciamx/ serves `index.html`, a copy of the current prototype.
+  After changing the prototype, refresh it with `cp prototypes/v2-sun-moon-field.html index.html`.
 - **Next:** port the prototype into the real site in `site/` (Next.js + React Three Fiber), swap placeholder dragonflies for Juan's model.
 
 ## Folder map
