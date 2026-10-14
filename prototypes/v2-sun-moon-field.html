@@ -169,10 +169,11 @@ vec3 skyRise(vec3 d){float y=max(d.y,0.);float s=max(dot(d,uSun),0.);float fa=ma
  return c+vec3(1.2,0.66,0.28)*pow(s,10.)*0.7+vec3(1.,0.75,0.45)*pow(s,3.)*0.18*exp(-y*4.);}
 vec3 skyBase(vec3 d){return mix(mix(skyDay(d),skyNight(d),uMode),skyRise(d),uWater);}`;
 const ROCK=`uniform sampler2D uRock;uniform vec4 uRockA;uniform vec4 uRockO;
-// rock stacks from the .blend terrain: kept out of the lagoon around the sculpture, taller toward the horizon, open toward the sunrise
-float rockH(vec2 p){float r=length(p);float h=uRockA.y+texture(uRock,(p-uRockO.xy)/uRockA.x).r*(uRockA.z-uRockA.y);
- h*=1.+uRockA.w*smoothstep(30.,120.,r);h-=(1.-smoothstep(21.,32.,r))*7.;
- h-=smoothstep(0.93,0.985,dot(p/max(r,1e-3),uRockO.zw))*9.;return h;}`;
+// rocks from the .blend terrain, scaled up evenly (uRockA.w across, uRockO.z up), smoothed (mip 1) so peaks are rounder,
+// grouped into loose islands with open water between them, and kept well out past the sculpture
+float rockH(vec2 p){float r=length(p);float h=uRockA.y+textureLod(uRock,(p/uRockA.w-uRockO.xy)/uRockA.x,1.).r*(uRockA.z-uRockA.y);
+ float isl=smoothstep(0.38,0.62,noise(p*0.016+vec2(5.7,13.9))*0.75+noise(p*0.05+vec2(1.3,4.2))*0.25);
+ return h*uRockO.z*isl-(1.-isl)*4.-(1.-smoothstep(48.,70.,r))*40.;}`;
 const LIGHT=`
 uniform vec3 uSunCol;uniform vec3 uSky;uniform vec3 uCam;uniform float uBodyL;uniform vec4 uSwarm;
 vec3 bodyLight(vec3 p){float d=max(length((p.xz-uBodyC)/uBodyR)-1.,0.)*2.4+max(p.y-1.,0.)*0.25;
@@ -257,7 +258,7 @@ const P={
    float w=(1.-t*0.9)*0.021*wm*(0.7+0.6*aR)*(1.+0.045*length(b-uCam.xz));
    vec3 p=vec3(b.x+ac.x*aB.x*w,0.,b.y+ac.y*aB.x*w);p.xz+=lean*t*t*h;
    p.y=groundH(b)+t*h*(1.-0.4*min(length(lean),1.)*t);
-   vW=p;vT=t;vR=aR;vAc=ac;vFar=(step(0.5,uLayer)*step(uLayer,1.5)+step(2.5,uLayer)*0.6)*smoothstep(10.,30.,length(b-uCam.xz));vDry=smoothstep(0.4,0.8,noise(b*0.15));gl_Position=uVP*vec4(p,1.);}`,
+   vW=p;vT=t;vR=aR;vAc=ac;vFar=mix(0.6,1.,step(0.5,uLayer)*step(uLayer,1.5))*smoothstep(10.,30.,length(b-uCam.xz));vDry=smoothstep(0.4,0.8,noise(b*0.15));gl_Position=uVP*vec4(p,1.);}`,
   `in vec3 vW;in float vT;in float vR;in vec2 vAc;in float vDry;in float vFar;out vec4 o;uniform float uBake;${NOISE}${SKY}${LIGHT}
   void main(){vec3 root=mix(vec3(0.012,0.03,0.005),vec3(0.01,0.012,0.006),uMode);
    vec3 tip=mix(vec3(0.17,0.30,0.035),vec3(0.42,0.46,0.09),vDry*0.6+vR*0.35)*(0.8+0.4*vR);
@@ -288,41 +289,41 @@ const P={
  ocean:prog(`layout(location=0) in vec2 aP;uniform mat4 uVP;uniform float uTime;out vec3 vW;
   void main(){vec2 p=aP;float y=0.2+0.06*sin(dot(p,vec2(0.21,0.13))+uTime*0.9)+0.045*sin(dot(p,vec2(-0.17,0.29))+uTime*1.1)+0.025*sin(dot(p,vec2(0.41,-0.33))+uTime*1.6);
    vW=vec3(p.x,y,p.y);gl_Position=uVP*vec4(vW,1.);}`,
-  `in vec3 vW;out vec4 o;uniform vec3 uPtr;uniform float uGlow;${NOISE}${SKY}${LIGHT}${ROCK}
+  `in vec3 vW;out vec4 o;uniform vec3 uPtr;uniform float uGlow;uniform sampler2D uRefl;uniform vec2 uRes;${NOISE}${SKY}${LIGHT}${ROCK}
   vec2 wg(vec2 p,float t){vec2 g=vec2(0.);for(int i=0;i<11;i++){float fi=float(i);float a=fi*2.399+0.4;vec2 dr=vec2(cos(a),sin(a));
     float k=0.32*pow(1.36,fi);float A=0.085/pow(1.5,fi);float ph=dot(dr,p)*k+t*sqrt(9.8*k)+fi*1.7;g+=dr*k*A*cos(ph);}return g;}
-  bool hitE(vec3 ro,vec3 rd,vec3 c,vec3 r){vec3 oc=(ro-c)/r,dd=rd/r;float a=dot(dd,dd),b=dot(oc,dd),cc=dot(oc,oc)-1.;float q=b*b-a*cc;return q>0.&&(-b-sqrt(q))>0.;}
   void main(){float dist=length(vW-uCam);vec2 g=wg(vW.xz,uTime);
    vec2 tp=vW.xz-uPtr.xy;float r=length(tp);if(r>0.01)g+=tp/r*cos(r*6.5-uTime*4.5)*0.22*uPtr.z*exp(-r*0.55);
    g*=1./(1.+dist*0.035);vec3 n=normalize(vec3(-g.x,1.,-g.y));vec3 v=normalize(uCam-vW);
    vec3 rr=reflect(-v,n);rr.y=abs(rr.y)+0.002;rr=normalize(rr);
-   float fr=0.02+0.75*pow(1.-max(dot(n,v),0.),5.);vec3 refl=skyBase(rr)*0.85;
+   float fr=0.06+0.9*pow(1.-max(dot(n,v),0.),5.);vec3 refl=skyBase(rr)*0.9;
    refl+=uSunCol*pow(max(dot(rr,uSun),0.),mix(1400.,160.,smoothstep(6.,70.,dist)))*mix(7.,3.,smoothstep(6.,70.,dist));
-   float sc=0.;if(hitE(vW,rr,vec3(-0.18,0.4,-0.27),vec3(2.45,1.9,1.95)))sc=1.;else if(hitE(vW,rr,vec3(0.1,2.6,0.),vec3(0.95,0.55,0.95)))sc=1.;else if(hitE(vW,rr,vec3(0.17,3.75,0.22),vec3(0.8,0.82,0.86)))sc=1.;
-   refl=mix(refl,vec3(1.,0.96,0.9)*1.6*uGlow,sc*0.35);
+   vec2 ruv=gl_FragCoord.xy/uRes+g*vec2(0.13,0.22)/(1.+dist*0.04);vec4 ro=vec4(0.);for(int i=-4;i<=4;i++){float fi=float(i);ro+=textureLod(uRefl,ruv+vec2(fi*0.0016,fi*0.0075),2.)*(5.-abs(fi));}ro/=25.;refl=mix(refl,ro.rgb*0.68,ro.a*0.9);   // true mirror image of the sculpture and rocks, rippled by the waves
    vec3 deep=vec3(0.003,0.03,0.06);vec3 sss=vec3(0.015,0.12,0.14)*(uSunCol*0.15+uSky*0.5)*clamp(0.4+(vW.y-0.2)*5.,0.,1.);
-   vec3 c=mix(deep*(uSky+0.25)+sss+bodyLight(vW)*vec3(0.06,0.14,0.15),refl,fr);
-   float e=length((vW.xz-uBodyC)/uBodyR);float fm=(1.-smoothstep(0.95,1.4,e))*smoothstep(0.38,0.72,noise(vW.xz*3.2+uTime*0.5)+0.25*(1.-e));
-   c=mix(c,(uSky*0.8+uSunCol*0.35)*0.9,clamp(fm,0.,1.)*0.7);
+   vec3 c=mix(deep*(uSky+0.25)+sss,refl,max(fr,0.22*ro.a));
    float dep=vW.y-0.2-rockH(vW.xz);c=mix(c,c*0.7+vec3(0.03,0.13,0.12)*(uSky+uSunCol*0.25),(1.-smoothstep(0.,1.8,dep))*0.55*(1.-fr));
    float fz=(1.-smoothstep(0.,0.4,abs(dep-0.06)))*smoothstep(0.3,0.75,noise(vW.xz*4.+uTime*0.6)+0.15);c=mix(c,(uSky*0.8+uSunCol*0.35)*0.9,fz*0.65);
    o=vec4(fogit(c,vW),1.);}`),
  blob:prog(`layout(location=0) in vec3 aP;layout(location=1) in vec4 aI;layout(location=2) in float aPh;uniform mat4 uVP;uniform float uTime;out vec3 vW;out vec3 vN;
-  void main(){vec3 n=aP;float w=sin(n.x*3.+uTime*2.6+aPh*6.)*sin(n.y*2.7+uTime*2.1+aPh*3.)*0.06+sin(n.z*3.3-uTime*2.9+aPh*5.)*0.04;
-   vec3 p=n*(1.+w);vW=aI.xyz+p*aI.w;vN=normalize(n*(1.-w*1.5));gl_Position=uVP*vec4(vW,1.);}`,
+  mat3 rY(float a){float c=cos(a),s=sin(a);return mat3(c,0,-s,0,1,0,s,0,c);}
+  void main(){vec3 n=rY(uTime*0.25+aPh*6.283)*aP;float w=sin(aP.x*2.3+aPh*6.)*sin(aP.y*2.1+aPh*3.)*0.09+sin(aP.z*2.7+aPh*5.)*0.05;   // rigid, slightly irregular glass; slow turn
+   vec3 p=n*(1.+w);vW=aI.xyz+p*aI.w;vN=normalize(n*(1.-w*1.2));gl_Position=uVP*vec4(vW,1.);}`,
   `in vec3 vW;in vec3 vN;out vec4 o;uniform float uGlow;${NOISE}${SKY}${LIGHT}
+  vec3 env(vec3 d){return d.y>0.?skyBase(d):mix(vec3(0.01,0.05,0.08)*(uSky+0.3),skyBase(normalize(vec3(d.x,-d.y,d.z))),0.5);}
   void main(){vec3 n=normalize(vN);vec3 v=normalize(uCam-vW);if(dot(n,v)<0.)n=-n;float nv=max(dot(n,v),0.);
-   float fr=0.12+0.88*pow(1.-nv,3.);vec3 rl=reflect(-v,n);
-   vec3 refl=rl.y>0.?skyBase(rl):mix(vec3(0.004,0.035,0.06),skyBase(normalize(vec3(rl.x,-rl.y,rl.z))),0.55);
-   vec3 rf=refract(-v,n,0.75);vec3 refr=skyBase(normalize(vec3(-rf.x,-rf.y*0.6+0.05,-rf.z)))*vec3(0.55,0.8,0.9);
-   vec3 toS=normalize(vec3(0.1,2.6,0.)-vW);float gs=pow(max(dot(rl,toS),0.),14.)*1.2+pow(max(dot(rf,toS),0.),6.)*0.5;
-   float sp=pow(max(dot(rl,uSun),0.),600.)*22.+pow(max(dot(rl,uSun),0.),40.)*0.8;
-   vec3 c=mix(refr*0.7,refl*1.25,fr)+uSunCol*sp+vec3(1.,0.96,0.9)*gs*uGlow+uSunCol*pow(max(dot(-n,uSun),0.),10.)*0.35;
-   o=vec4(fogit(c,vW),mix(0.55,1.,fr));}`),
+   float fr=0.04+0.96*pow(1.-nv,5.);vec3 rl=reflect(-v,n);
+   vec3 refl=env(rl);
+   // ball lens: strong refraction flips the world (sea on top, sky below); each colour bends a little differently
+   vec3 refr=vec3(env(refract(-v,n,0.62)).r,env(refract(-v,n,0.65)).g,env(refract(-v,n,0.68)).b)*vec3(0.94,0.98,0.97);
+   vec3 toS=normalize(vec3(0.1,2.6,0.)-vW);float gs=pow(max(dot(rl,toS),0.),30.)*1.4+pow(max(dot(refract(-v,n,0.65),toS),0.),10.)*0.5;
+   float sp=pow(max(dot(rl,uSun),0.),1600.)*40.+pow(max(dot(rl,uSun),0.),90.)*1.2;
+   float rim=pow(1.-nv,2.5);
+   vec3 c=mix(refr,refl*1.1,fr)+uSunCol*sp+vec3(1.,0.96,0.9)*gs*uGlow+vec3(1.)*rim*0.12*(uSky+uSunCol*0.3);
+   o=vec4(fogit(c,vW),mix(0.82,1.,fr));}`),
  fig:prog(`layout(location=0) in vec3 aP;layout(location=1) in vec3 aN;layout(location=2) in float aPart;uniform mat4 uVP;uniform vec3 uExt;uniform float uS;uniform float uY;uniform vec2 uLift;
   out vec3 vN;out vec3 vW;void main(){vW=aP*uExt*uS+vec3(0.,uY,0.);vW.y+=aPart>1.5?uLift.y:aPart>0.5?uLift.x:0.;vN=aN;gl_Position=uVP*vec4(vW,1.);}`,
-  `in vec3 vN;in vec3 vW;out vec4 o;uniform float uGlow;uniform float uExpo;${NOISE}${SKY}${LIGHT}
-  void main(){vec3 n=normalize(vN+vec3(1e-5));float cav=1.;if(!gl_FrontFacing){n=-n;cav=0.55;}vec3 v=normalize(uCam-vW);float fr=clamp(1.-abs(dot(n,v)),0.,1.);
+  `in vec3 vN;in vec3 vW;out vec4 o;uniform float uGlow;uniform float uExpo;uniform float uClipY;${NOISE}${SKY}${LIGHT}
+  void main(){if(vW.y<uClipY)discard;vec3 n=normalize(vN+vec3(1e-5));float cav=1.;if(!gl_FrontFacing){n=-n;cav=0.55;}vec3 v=normalize(uCam-vW);float fr=clamp(1.-abs(dot(n,v)),0.,1.);
    float occ=mix(0.22,1.,smoothstep(-0.8,0.4,n.y));float sun=mix(mix(0.32,1.,smoothstep(-0.2,0.6,dot(n,uSun))),1.,uMode);
    float pulse=0.96+0.04*sin(uTime*0.9);
    float shade=mix(0.75,1.,smoothstep(-0.2,0.6,dot(n,uSun)));
@@ -351,12 +352,12 @@ const P={
    gl_PointSize=clamp(uFFS*uH*0.05*(0.6+b*0.5)/max(-vp.z,0.1),1.5,80.);}`,
   `in float vB;out vec4 o;uniform vec3 uFFC;uniform float uFFK;void main(){vec2 q=gl_PointCoord-0.5;float r=length(q)*2.;
    float a=(exp(-r*r*20.*uFFK)+exp(-r*r*4.)*0.22/uFFK)*(1.-smoothstep(0.8,1.,r));o=vec4(uFFC*a*vB*6.,1.);}`),
- rock:prog(`layout(location=0) in vec2 aP;uniform mat4 uVP;out vec3 vW;out vec3 vN;${ROCK}
+ rock:prog(`layout(location=0) in vec2 aP;uniform mat4 uVP;out vec3 vW;out vec3 vN;${NOISE}${ROCK}
   void main(){vec2 p=vec2(cos(aP.x),sin(aP.x))*aP.y;const float e=0.22;
    vN=normalize(vec3(rockH(p-vec2(e,0.))-rockH(p+vec2(e,0.)),2.*e,rockH(p-vec2(0.,e))-rockH(p+vec2(0.,e))));
    vW=vec3(p.x,0.2+rockH(p),p.y);gl_Position=uVP*vec4(vW,1.);}`,
   `in vec3 vW;in vec3 vN;out vec4 o;${NOISE}${SKY}${LIGHT}
-  void main(){if(vW.y<-0.4)discard;float dist=length(vW-uCam);vec3 v=normalize(uCam-vW);
+  uniform float uClipY;void main(){if(vW.y<max(-0.4,uClipY))discard;float dist=length(vW-uCam);vec3 v=normalize(uCam-vW);
    float near=1.-smoothstep(25.,80.,dist);
    vec3 g=vec3(noise(vW.xz*2.6+vec2(0.,vW.y*2.2))-0.5,0.,noise(vW.zx*2.6+vec2(vW.y*2.2,5.))-0.5)+vec3(noise(vW.xz*9.+vW.y*4.)-0.5,0.,noise(vW.zx*9.-vW.y*4.)-0.5)*0.5;
    vec3 n=normalize(normalize(vN)+g*1.1*near);
@@ -454,15 +455,14 @@ const EXT=fd.ext.map(v=>v*32767);
 const rd_=JSON.parse(document.getElementById('rockdata').textContent),rraw=atob(rd_.b64),rbin=new Uint8Array(rraw.length);for(let i=0;i<rraw.length;i++)rbin[i]=rraw.charCodeAt(i);
 const rockTex=gl.createTexture();gl.bindTexture(gl.TEXTURE_2D,rockTex);gl.pixelStorei(gl.UNPACK_ALIGNMENT,1);
 gl.texImage2D(gl.TEXTURE_2D,0,gl.R8,rd_.n,rd_.n,0,gl.RED,gl.UNSIGNED_BYTE,rbin);
-for(const [p,v] of [[gl.TEXTURE_MIN_FILTER,gl.LINEAR],[gl.TEXTURE_MAG_FILTER,gl.LINEAR],[gl.TEXTURE_WRAP_S,gl.MIRRORED_REPEAT],[gl.TEXTURE_WRAP_T,gl.MIRRORED_REPEAT]])gl.texParameteri(gl.TEXTURE_2D,p,v);
-const ROCK_HEIGHT=1.6;   // how much taller the far rocks get toward the horizon (0 = as modelled)
-const RA=mobile?420:680,RR=mobile?100:150,R0=19,R1=GS/2,rkv=new Float32Array((RA+1)*(RR+1)*2),rki=new Uint32Array(RA*RR*6);
+for(const [p,v] of [[gl.TEXTURE_MIN_FILTER,gl.LINEAR_MIPMAP_LINEAR],[gl.TEXTURE_MAG_FILTER,gl.LINEAR],[gl.TEXTURE_WRAP_S,gl.MIRRORED_REPEAT],[gl.TEXTURE_WRAP_T,gl.MIRRORED_REPEAT]])gl.texParameteri(gl.TEXTURE_2D,p,v);gl.generateMipmap(gl.TEXTURE_2D);
+const ROCK_SCALE=3.0,ROCK_VSCALE=2.6;   // rocks vs. the .blend: 3x wider, 2.6x taller (slightly flatter than as modelled)
+const RA=mobile?420:680,RR=mobile?100:150,R0=42,R1=GS/2,rkv=new Float32Array((RA+1)*(RR+1)*2),rki=new Uint32Array(RA*RR*6);
 for(let j=0,k=0;j<=RR;j++)for(let i=0;i<=RA;i++){rkv[k++]=i/RA*Math.PI*2;rkv[k++]=R0*Math.pow(R1/R0,j/RR);}
 for(let j=0,k=0;j<RR;j++)for(let i=0;i<RA;i++){const a=j*(RA+1)+i,b=a+1,c=a+RA+1,d=c+1;rki.set([a,b,c,b,d,c],k);k+=6;}
 const rkVAO=gl.createVertexArray();gl.bindVertexArray(rkVAO);vbo(rkv,0,2,gl.FLOAT,false);
 const rkib=gl.createBuffer();gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER,rkib);gl.bufferData(gl.ELEMENT_ARRAY_BUFFER,rki,gl.STATIC_DRAW);gl.bindVertexArray(null);
-function setRock(u){if(!u.uRock)return;tx(u.uRock,6,rockTex);gl.uniform4f(u.uRockA,rd_.n*rd_.cell,rd_.lo,rd_.hi,ROCK_HEIGHT);
-  const sx=RISE_D[0],sz=RISE_D[2],sl=Math.hypot(sx,sz);gl.uniform4f(u.uRockO,rd_.x0,rd_.z0,sx/sl,sz/sl);}
+function setRock(u){if(!u.uRock)return;tx(u.uRock,6,rockTex);gl.uniform4f(u.uRockA,rd_.n*rd_.cell,rd_.lo,rd_.hi,ROCK_SCALE);gl.uniform4f(u.uRockO,rd_.x0,rd_.z0,ROCK_VSCALE,0);}
 
 // placeholder chrome dragonfly (+z forward)
 const DP=[],DN=[],DW=[],DI=[];
@@ -477,7 +477,9 @@ const DP=[],DN=[],DW=[],DI=[];
   for(const s of [1,-1]){wing(s,0.014,0.078,0.009,0);wing(s,0.003,0.072,0.012,1);}
 })();
 // NFLY_BASE wander all the time; the extra ones wait above the frame and glide in while the cursor is active
-const NFLY_BASE=mobile?6:9,NFLY=mobile?10:18,flies=[],flyInst=new Float32Array(NFLY*8);
+// every swarm (dragonflies, fireflies, water beads) closes in on the cursor at this same rate (1/s)
+const FOLLOW=reduce?1.6:3.2;
+const NFLY_BASE=mobile?6:9,NFLY=mobile?16:28,flies=[],flyInst=new Float32Array(NFLY*8);
 for(let i=0;i<NFLY;i++)flies.push({extra:i>=NFLY_BASE,p:i>=NFLY_BASE?[(rnd()-0.5)*24,12+rnd()*2,(rnd()-0.5)*24]:[(rnd()-0.5)*6,1.5+rnd()*2,6+rnd()*4],v:[0,0,0],tg:null,t:0,yaw:rnd()*6,ph:rnd(),depth:2.4+rnd()*3.5,bank:0,pitch:0});
 const flyVAO=gl.createVertexArray();gl.bindVertexArray(flyVAO);
 vbo(new Float32Array(DP),0,3,gl.FLOAT,false);vbo(new Float32Array(DN),1,3,gl.FLOAT,false);vbo(new Float32Array(DW),2,2,gl.FLOAT,false);
@@ -560,7 +562,7 @@ function runBakeJob(t){const [m,k]=bake.jobs.shift(),E=bake.pEye,yk=k*Math.PI/4,
   else if(bake.jobs.length===8&&!bake.on){bake.eye=bake.pEye;bake.tc=bake.pTc;bake.on=true;}}
 
 /* ---------- render targets ---------- */
-let frost=[],W=0,H=0,msFB,scene,bloom=[];const owned=[];
+let frost=[],W=0,H=0,msFB,scene,refl,bloom=[];const owned=[];
 function rt(w,h){const t=gl.createTexture();gl.bindTexture(gl.TEXTURE_2D,t);gl.texImage2D(gl.TEXTURE_2D,0,FMT,w,h,0,gl.RGBA,TYPE,null);
   gl.texParameteri(gl.TEXTURE_2D,gl.TEXTURE_MIN_FILTER,gl.LINEAR);gl.texParameteri(gl.TEXTURE_2D,gl.TEXTURE_MAG_FILTER,gl.LINEAR);
   gl.texParameteri(gl.TEXTURE_2D,gl.TEXTURE_WRAP_S,gl.CLAMP_TO_EDGE);gl.texParameteri(gl.TEXTURE_2D,gl.TEXTURE_WRAP_T,gl.CLAMP_TO_EDGE);
@@ -574,7 +576,9 @@ function resize(){const dpr=Math.min(devicePixelRatio||1,mobile?1.5:1.75);const 
   gl.framebufferRenderbuffer(gl.FRAMEBUFFER,gl.COLOR_ATTACHMENT0,gl.RENDERBUFFER,c);
   const d=gl.createRenderbuffer();gl.bindRenderbuffer(gl.RENDERBUFFER,d);gl.renderbufferStorageMultisample(gl.RENDERBUFFER,smp,gl.DEPTH24_STENCIL8,W,H);
   gl.framebufferRenderbuffer(gl.FRAMEBUFFER,gl.DEPTH_STENCIL_ATTACHMENT,gl.RENDERBUFFER,d);owned.push({rb:c},{rb:d});
-  scene=rt(W,H);owned.push(scene);frost=[rt(Math.max(1,W>>2),Math.max(1,H>>2)),rt(Math.max(1,W>>2),Math.max(1,H>>2))];owned.push(frost[0],frost[1]);bloom=[];let bw=W>>1,bh=H>>1;
+  scene=rt(W,H);owned.push(scene);refl=rt(W,H);owned.push(refl);gl.bindTexture(gl.TEXTURE_2D,refl.t);gl.texParameteri(gl.TEXTURE_2D,gl.TEXTURE_MIN_FILTER,gl.LINEAR_MIPMAP_LINEAR);
+  {const d=gl.createRenderbuffer();gl.bindRenderbuffer(gl.RENDERBUFFER,d);gl.renderbufferStorage(gl.RENDERBUFFER,gl.DEPTH_COMPONENT24,refl.w,refl.h);gl.bindFramebuffer(gl.FRAMEBUFFER,refl.f);gl.framebufferRenderbuffer(gl.FRAMEBUFFER,gl.DEPTH_ATTACHMENT,gl.RENDERBUFFER,d);owned.push({rb:d});}
+  frost=[rt(Math.max(1,W>>2),Math.max(1,H>>2)),rt(Math.max(1,W>>2),Math.max(1,H>>2))];owned.push(frost[0],frost[1]);bloom=[];let bw=W>>1,bh=H>>1;
   for(let i=0;i<4;i++){const a=rt(Math.max(bw,1),Math.max(bh,1)),b=rt(Math.max(bw,1),Math.max(bh,1));bloom.push([a,b]);owned.push(a,b);bw>>=1;bh>>=1;}}
 addEventListener('resize',resize);resize();
 function fs(pr,target,set){gl.bindFramebuffer(gl.FRAMEBUFFER,target?target.f:null);gl.viewport(0,0,target?target.w:W,target?target.h:H);
@@ -603,9 +607,16 @@ addEventListener('pointerup',e=>{const wasDown=ptr.down;ptr.down=false;
     figF=1;orbitV=0;setTimeout(()=>setAbout(true),160);}});
 /* gyro: physically turning the phone orbits the environment (touch gestures don't). iOS asks permission on the first tap. */
 const gyro={a0:null,tgt:0,v:0,on:false};
-function onTurn(e){if(reduce||e.alpha==null)return;if(gyro.a0===null)gyro.a0=e.alpha;
-  const d=((e.alpha-gyro.a0+540)%360)-180;gyro.tgt=d*Math.PI/180*GYRO_GAIN;gyro.on=true;}
-const GYRO_GAIN=0.6;   // 1 = scene turns as far as the phone; sign is flipped by changing this to a negative
+// constrained: horizontal orbit only, a few degrees each way, soft stop at the edges, slowly re-centres
+function onTurn(e){if(reduce||e.alpha==null)return;const wrap=a=>((a+540)%360)-180;
+  if(gyro.a0===null){gyro.a0=e.alpha;gyro.last=e.alpha;gyro.ts=e.timeStamp;}
+  if(Math.abs(wrap(e.alpha-gyro.last))>40)gyro.a0=wrap(gyro.a0+wrap(e.alpha-gyro.last));   // sensor jump (phone tipped a lot): absorb it, don't spin
+  gyro.last=e.alpha;const dts=Math.min(Math.max((e.timeStamp-gyro.ts)/1000,0),0.2);gyro.ts=e.timeStamp;
+  gyro.a0=wrap(gyro.a0+wrap(e.alpha-gyro.a0)*(1-Math.exp(-dts*GYRO_RECENTER)));
+  const d=wrap(e.alpha-gyro.a0)*Math.PI/180*GYRO_GAIN;gyro.tgt=GYRO_MAX*Math.tanh(d/GYRO_MAX);gyro.on=true;}
+const GYRO_GAIN=0.5;      // how much of the phone's turn reaches the scene; negative flips the direction
+const GYRO_MAX=0.35;      // max swing each way (radians, about 20 degrees)
+const GYRO_RECENTER=0.25; // how fast the view eases back to the front (1/s; about 4 s)
 function startGyro(){if(gyro.armed)return;gyro.armed=true;
   const go=()=>addEventListener('deviceorientation',onTurn);
   if(typeof DeviceOrientationEvent!=='undefined'&&typeof DeviceOrientationEvent.requestPermission==='function'){
@@ -635,7 +646,7 @@ function frameInner(now){const dt=Math.min((now-prev)/1000,0.05);prev=now;const 
   if(wat){SUN=RISE_D;SC=RISE.sun;SK=RISE.sky;BL=RISE.bodyL;EXPO=RISE.exp;}
   if(!ptr.down)orbit+=orbitV*dt;orbitV*=Math.exp(-dt*(ptr.down?12:4.5));
   par.x+=(ptr.nx-par.x)*(1-Math.exp(-dt*0.8));par.y+=(ptr.ny-par.y)*(1-Math.exp(-dt*0.8));
-  gyro.v+=(gyro.tgt-gyro.v)*(1-Math.exp(-dt*5));   // smooth the sensor so the scene glides instead of jittering
+  gyro.v+=(gyro.tgt-gyro.v)*(1-Math.exp(-dt*3));   // smooth the sensor so the scene glides instead of jittering
   const th=THETA0+(reduce?0:Math.sin(t*0.012)*0.16)+orbit+gyro.v,rad=mobile?15:12;   // desktop sits closer so the sculpture reads bigger
   let eye=[Math.sin(th)*rad,1.9+par.y*0.12,Math.cos(th)*rad];
   const side=[Math.cos(th),0,-Math.sin(th)],fwd=[-Math.sin(th),0,-Math.cos(th)];
@@ -675,13 +686,14 @@ function frameInner(now){const dt=Math.min((now-prev)/1000,0.05);prev=now;const 
   const flyScale=2.6*Math.max(0,1-md*1.6);
   for(let i=0;i<NFLY;i++){const f=flies[i];f.t-=dt;const act=ptrA>0.4;if(f.act!==act){f.act=act;f.t=0;}   // react right away when the cursor wakes up / goes quiet
     if(f.t<=0||!f.tg){
-      if(ptrA>0.4){const dist=Math.hypot(ptr3[0]-eye[0],ptr3[2]-eye[2]),sp=0.8+dist*0.09;f.tg=[ptr3[0]+(rnd()-0.5)*2*sp,ptr3[1]+0.45+rnd()*(1.2+dist*0.04)+((f.ph*7)%1)*0.5,ptr3[2]+(rnd()-0.5)*2*sp];f.t=1.0+rnd()*1.0;}
+      if(ptrA>0.4){const dist=Math.hypot(ptr3[0]-eye[0],ptr3[2]-eye[2]),sp=0.8+dist*0.09;f.off=[(rnd()-0.5)*2*sp,0.45+rnd()*(1.2+dist*0.04)+((f.ph*7)%1)*0.5,(rnd()-0.5)*2*sp];f.tg=[0,0,0];f.t=1.0+rnd()*1.0;}
       else if(f.extra){const l=(rnd()<0.5?-1:1)*(8+rnd()*6),d=rnd()*10;f.tg=[eye[0]+fwd[0]*d+side[0]*l,12+rnd()*2,eye[2]+fwd[2]*d+side[2]*l];f.t=3+rnd()*2;}   // back up out of view
       else{const d=2.5+rnd()*7,l=(rnd()-0.5)*7;f.tg=[eye[0]+fwd[0]*d+side[0]*l,0.6+rnd()*3.4,eye[2]+fwd[2]*d+side[2]*l];f.t=2.5+rnd()*2.5;}}
-    // calm glide: soft, fully damped spring (no stop-and-go overshoot)
-    const k=reduce?5:9,dmp=reduce?4.5:6;
+    if(f.act&&f.off)for(let c=0;c<3;c++)f.tg[c]=ptr3[c]+f.off[c];   // follow the cursor continuously, drifting around it
+    // following: critically damped spring matched to FOLLOW; wandering: the calm, soft glide
+    const k=f.act?4*FOLLOW*FOLLOW:(reduce?5:9),dmp=f.act?4*FOLLOW:(reduce?4.5:6);
     for(let c=0;c<3;c++)f.v[c]+=((f.tg[c]-f.p[c])*k-f.v[c]*dmp)*dt;
-    {const vs=Math.hypot(...f.v),VMAX=reduce?2.5:4.5;if(vs>VMAX)for(let c=0;c<3;c++)f.v[c]*=VMAX/vs;}   // speed cap: newcomers glide in instead of diving
+    {const vs=Math.hypot(...f.v),VMAX=f.act?(reduce?4:9):(reduce?2.5:4.5);if(vs>VMAX)for(let c=0;c<3;c++)f.v[c]*=VMAX/vs;}   // speed cap: newcomers glide in instead of diving
     for(let c=0;c<3;c++)f.p[c]+=f.v[c]*dt;
     const sp=Math.hypot(f.v[0],f.v[2]);const oy=f.yaw;if(sp>0.25)f.yaw=lerpAng(f.yaw,Math.atan2(f.v[0],f.v[2]),1-Math.exp(-dt*3.2));   // slower, smoother turns
     const yr=(f.yaw-oy)/Math.max(dt,1e-3);f.bank+=(Math.max(-0.7,Math.min(0.7,-yr*0.12))-f.bank)*(1-Math.exp(-dt*6));
@@ -693,7 +705,7 @@ function frameInner(now){const dt=Math.min((now-prev)/1000,0.05);prev=now;const 
     let x=b.h[0]+Math.sin(t*b.s[0]+ph)*0.7,y=b.h[1]+Math.sin(t*b.s[1]+ph*1.7)*0.22,z=b.h[2]+Math.cos(t*b.s[2]+ph*0.6)*0.7;
     if(b.fol&&ptrA>0.01){const sr=0.6+((b.ph*13)%1)*1.1,gx=ptr3[0]+Math.sin(t*0.9+ph*9)*sr,gy=ptr3[1]+0.55+Math.sin(t*0.7+ph*5)*0.25+((b.ph*7)%1)*1.1,gz=ptr3[2]+Math.cos(t*1.1+ph*7)*sr;
       x+=(gx-x)*ptrA;y+=(gy-y)*ptrA;z+=(gz-z)*ptrA;}
-    const kk=1-Math.exp(-dt*b.k*(reduce?0.4:0.8));b.p[0]+=(x-b.p[0])*kk;b.p[1]+=(y-b.p[1])*kk;b.p[2]+=(z-b.p[2])*kk;
+    const kk=1-Math.exp(-dt*(b.fol&&ptrA>0.4?FOLLOW:b.k*(reduce?0.4:0.8)));b.p[0]+=(x-b.p[0])*kk;b.p[1]+=(y-b.p[1])*kk;b.p[2]+=(z-b.p[2])*kk;
     BLOB.data.set([b.p[0],b.p[1],b.p[2],b.r*(1+0.04*Math.sin(t*2.2+b.ph*7)),b.ph],i*5);}
    gl.bindBuffer(gl.ARRAY_BUFFER,BLOB.buf);gl.bufferSubData(gl.ARRAY_BUFFER,0,BLOB.data);}
   // fireflies (night)
@@ -703,13 +715,27 @@ function frameInner(now){const dt=Math.min((now-prev)/1000,0.05);prev=now;const 
     if(ui.dim>0.02){const a=t*0.4+ph,r=3.0+f.ph*1.6;gx=Math.cos(a)*r;gy=0.5+((f.ph*13)%1)*4.5;gz=Math.sin(a)*r;bl=ui.dim;}
     else if(f.fol&&ptrA>0.01){gx=ptr3[0]+Math.sin(t*1.8+ph*9)*0.7;gy=ptr3[1]+0.5+Math.sin(t*1.2+ph*5)*0.35+((f.ph*7)%1)*0.6;gz=ptr3[2]+Math.cos(t*2.1+ph*7)*0.7;bl=ptrA;}
     if(bl>0){x+=(gx-x)*bl;y+=(gy-y)*bl;z+=(gz-z)*bl;}
-    const kk=1-Math.exp(-dt*f.k*(reduce?0.5:1));f.p[0]+=(x-f.p[0])*kk;f.p[1]+=(y-f.p[1])*kk;f.p[2]+=(z-f.p[2])*kk;
+    const kk=1-Math.exp(-dt*(f.fol&&ptrA>0.4&&ui.dim<=0.02?FOLLOW:f.k*(reduce?0.5:1)));f.p[0]+=(x-f.p[0])*kk;f.p[1]+=(y-f.p[1])*kk;f.p[2]+=(z-f.p[2])*kk;
     ffData.set([f.p[0],f.p[1],f.p[2],f.ph],i*4);if(f.fol){sx+=f.p[0];sy+=f.p[1];sz+=f.p[2];sn++;}}
   if(sn)swarm=[sx/sn,sy/sn,sz/sn,ptrA*md];
   gl.bindBuffer(gl.ARRAY_BUFFER,ffB);gl.bufferSubData(gl.ARRAY_BUFFER,0,ffData);
 
   // ---- hill panorama bake (spread over frames; re-bakes after the camera settles somewhere new)
   {/* hills are live grass now; panorama bake disabled */}
+  // glow softened: 15% less at rest (x0.85), gentler hover boost (0.45)
+  function drawFig(S,clipY){gl.useProgram(P.fig.p);setU(P.fig.u,S);gl.uniform1f(P.fig.u.uClipY,clipY);gl.uniform3fv(P.fig.u.uExt,EXT);gl.uniform1f(P.fig.u.uS,FIG_S);gl.uniform1f(P.fig.u.uY,FIG_Y);
+    const bob=k=>reduce?0:Math.sin(t*1.3+k*1.9)*0.025*Math.max(0,lift[k]/LIFT[k]);gl.uniform2f(P.fig.u.uLift,lift[0]+bob(0),lift[1]+bob(1));
+    gl.uniform1f(P.fig.u.uGlow,(glow*(1+0.45*figH)+figF*1.6)*0.85*(1-0.38*focus.v));gl.uniform1f(P.fig.u.uExpo,EXPO);
+    gl.bindVertexArray(fVAO);gl.drawElements(gl.TRIANGLES,fd.i,gl.UNSIGNED_SHORT,0);}
+  // ---- ocean reflection: the scene mirrored in the water plane (y = WATER_Y), clipped at the surface
+  const WATER_Y=0.2;
+  if(wat){const MR=new Float32Array([1,0,0,0, 0,-1,0,0, 0,0,1,0, 0,2*WATER_Y,0,1]);
+    const LR={VP:M.mul(VP,MR),eye:[eye[0],2*WATER_Y-eye[1],eye[2]],t,SUN,SC,SK,md,BL,swarm,water:wat};
+    gl.bindFramebuffer(gl.FRAMEBUFFER,refl.f);gl.viewport(0,0,refl.w,refl.h);gl.clearColor(0,0,0,0);gl.clear(gl.COLOR_BUFFER_BIT|gl.DEPTH_BUFFER_BIT);
+    gl.enable(gl.DEPTH_TEST);gl.depthMask(true);gl.frontFace(gl.CW);   // the mirror flips triangle winding
+    gl.useProgram(P.rock.p);setU(P.rock.u,LR);setRock(P.rock.u);gl.uniform1f(P.rock.u.uClipY,WATER_Y);gl.bindVertexArray(rkVAO);gl.drawElements(gl.TRIANGLES,rki.length,gl.UNSIGNED_INT,0);
+    drawFig(LR,WATER_Y);gl.frontFace(gl.CCW);
+    gl.bindTexture(gl.TEXTURE_2D,refl.t);gl.generateMipmap(gl.TEXTURE_2D);}   // mip levels = cheap defocus for the soft reflection
   // ---- scene
   gl.bindFramebuffer(gl.FRAMEBUFFER,msFB);gl.viewport(0,0,W,H);gl.clearColor(0,0,0,1);gl.clearStencil(0);gl.clear(gl.COLOR_BUFFER_BIT|gl.DEPTH_BUFFER_BIT|gl.STENCIL_BUFFER_BIT);
   const LS={VP,eye,t,SUN,SC,SK,md,BL:BL*glow*(1+0.5*figH+figF*1.2),swarm,water:wat};const common=u=>setU(u,LS);
@@ -717,13 +743,9 @@ function frameInner(now){const dt=Math.min((now-prev)/1000,0.05);prev=now;const 
   gl.bindVertexArray(emptyVAO);gl.drawArrays(gl.TRIANGLES,0,3);
   gl.enable(gl.DEPTH_TEST);gl.depthMask(true);
   if(!wat){gl.useProgram(P.ground.p);common(P.ground.u);gl.uniform1f(P.ground.u.uPanoOn,bake.on?1:0);gl.uniform2fv(P.ground.u.uBakeTC,bake.tc||[0,0]);gl.uniform2f(P.ground.u.uTC,0,0);gl.bindVertexArray(gVAO);gl.drawElements(gl.TRIANGLES,gi.length,gl.UNSIGNED_INT,0);
-  }else{gl.useProgram(P.ocean.p);common(P.ocean.u);gl.uniform3f(P.ocean.u.uPtr,ptrW[0],ptrW[2],ptrA*gHit);gl.uniform1f(P.ocean.u.uGlow,glow);setRock(P.ocean.u);gl.bindVertexArray(gVAO);gl.drawElements(gl.TRIANGLES,gi.length,gl.UNSIGNED_INT,0);
-    gl.useProgram(P.rock.p);common(P.rock.u);setRock(P.rock.u);gl.bindVertexArray(rkVAO);gl.drawElements(gl.TRIANGLES,rki.length,gl.UNSIGNED_INT,0);}
-  // glow softened: 15% less at rest (x0.85), gentler hover boost (0.45)
-  gl.useProgram(P.fig.p);common(P.fig.u);gl.uniform3fv(P.fig.u.uExt,EXT);gl.uniform1f(P.fig.u.uS,FIG_S);gl.uniform1f(P.fig.u.uY,FIG_Y);
-  {const bob=k=>reduce?0:Math.sin(t*1.3+k*1.9)*0.025*Math.max(0,lift[k]/LIFT[k]);gl.uniform2f(P.fig.u.uLift,lift[0]+bob(0),lift[1]+bob(1));}
-  gl.uniform1f(P.fig.u.uGlow,(glow*(1+0.45*figH)+figF*1.6)*0.85*(1-0.38*focus.v));gl.uniform1f(P.fig.u.uExpo,EXPO);
-  gl.bindVertexArray(fVAO);gl.drawElements(gl.TRIANGLES,fd.i,gl.UNSIGNED_SHORT,0);
+  }else{gl.useProgram(P.ocean.p);common(P.ocean.u);gl.uniform3f(P.ocean.u.uPtr,ptrW[0],ptrW[2],ptrA*gHit);gl.uniform1f(P.ocean.u.uGlow,glow);setRock(P.ocean.u);tx(P.ocean.u.uRefl,7,refl.t);gl.uniform2f(P.ocean.u.uRes,W,H);gl.bindVertexArray(gVAO);gl.drawElements(gl.TRIANGLES,gi.length,gl.UNSIGNED_INT,0);
+    gl.useProgram(P.rock.p);common(P.rock.u);setRock(P.rock.u);gl.uniform1f(P.rock.u.uClipY,-1e9);gl.bindVertexArray(rkVAO);gl.drawElements(gl.TRIANGLES,rki.length,gl.UNSIGNED_INT,0);}
+  drawFig(LS,-1e9);
   if(!wat){gl.useProgram(P.grass.p);common(P.grass.u);gl.uniform3f(P.grass.u.uPtr,ptrW[0],ptrW[2],ptrA*gHit);tx(P.grass.u.uMask,0,maskTex);gl.uniform1f(P.grass.u.uMaskE,md_.ext);
     for(const [L,layer,c] of [[NEAR,0,null],[BAKE,3,null],[CLOSE,2,6.8]]){gl.uniform1f(P.grass.u.uTile,L.tile);gl.uniform1f(P.grass.u.uLayer,layer);if(c===null)gl.uniform2f(P.grass.u.uTC,0,0);else gl.uniform2f(P.grass.u.uTC,eye[0]+fwd[0]*c,eye[2]+fwd[2]*c);
     gl.bindVertexArray(L.vao);gl.drawElementsInstanced(gl.TRIANGLES,bi.length,gl.UNSIGNED_SHORT,0,L.count);}
