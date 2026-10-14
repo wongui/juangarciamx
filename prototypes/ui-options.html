@@ -1,0 +1,54 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>UI options</title>
+<style>
+  :root{--bg:#0d0f13;--ink:#f3f2ee;--mute:rgba(243,242,238,.62);--line:rgba(243,242,238,.14)}
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{background:var(--bg);color:var(--ink);font-family:"Helvetica Neue",Helvetica,Inter,Arial,sans-serif;-webkit-font-smoothing:antialiased;padding:24px 28px 32px}
+  header{display:flex;flex-wrap:wrap;align-items:baseline;justify-content:space-between;gap:16px;margin-bottom:20px}
+  h1{font-size:20px;font-weight:600;letter-spacing:-.02em} h1 span{font-weight:300;color:var(--mute)}
+  .ctrl{display:flex;gap:6px;flex-wrap:wrap}
+  .ctrl button{all:unset;cursor:pointer;font-size:13px;padding:8px 14px;border-radius:999px;border:1px solid var(--line);color:var(--ink)}
+  .ctrl button[aria-pressed="true"]{background:var(--ink);color:var(--bg)}
+  .ctrl button:focus-visible{outline:2px solid var(--ink);outline-offset:2px}
+  .grid{display:grid;grid-template-columns:repeat(3,1fr);gap:18px}
+  @media (max-width:1100px){.grid{grid-template-columns:1fr}}
+  figure{display:flex;flex-direction:column;gap:10px}
+  .frame{position:relative;aspect-ratio:16/10;border-radius:14px;overflow:hidden;border:1px solid var(--line);background:#000}
+  iframe{position:absolute;inset:0;width:100%;height:100%;border:0}
+  figcaption{display:flex;justify-content:space-between;gap:12px;font-size:13px;line-height:1.5}
+  figcaption b{font-weight:600} figcaption p{color:var(--mute);margin-top:2px;max-width:46ch}
+  figcaption a{color:var(--ink);white-space:nowrap;font-size:13px}
+</style>
+</head>
+<body>
+<header>
+  <h1>Juangarcia<span>(mx)</span> — UI options</h1>
+  <div class="ctrl" role="group" aria-label="Scene for all three">
+    <button data-h="day" aria-pressed="true">(Sun)</button><button data-h="night" aria-pressed="false">(Moon)</button><button data-h="ocean" aria-pressed="false">(Ocean)</button>
+    <button data-about aria-pressed="false">(About open)</button>
+  </div>
+</header>
+<div class="grid">
+  <figure><div class="frame"><iframe data-ui="frosted" title="Option A, frosted"></iframe></div>
+    <figcaption><div><b>A · Frosted</b><p>Heavy milky blur, soft tint, almost no distortion. Calm and readable, the scene becomes colour behind it.</p></div><a data-open="frosted" href="#">Full screen ↗</a></figcaption></figure>
+  <figure><div class="frame"><iframe data-ui="glass" title="Option B, realistic glass"></iframe></div>
+    <figcaption><div><b>B · Realistic glass</b><p>Clear, sharp glass: the scene is seen through it, bent at the edges, with a top glare and crisp rim. Most crafted, least calm.</p></div><a data-open="glass" href="#">Full screen ↗</a></figcaption></figure>
+  <figure><div class="frame"><iframe data-ui="solid" title="Option C, always accessible"></iframe></div>
+    <figcaption><div><b>C · Always accessible</b><p>Opaque ink surface with light text in every mode, 44 px targets and strong focus rings. Readable over anything.</p></div><a data-open="solid" href="#">Full screen ↗</a></figcaption></figure>
+</div>
+<script>
+  const frames=[...document.querySelectorAll('iframe')],modes=[...document.querySelectorAll('[data-h]')],aboutBtn=document.querySelector('[data-about]');
+  let mode='day',about=false;
+  const url=ui=>`v2-ui-options.html?ui=${ui}#${mode}${about?'-about':''}`;
+  function load(){frames.forEach(f=>f.src=url(f.dataset.ui));document.querySelectorAll('[data-open]').forEach(a=>a.href=url(a.dataset.open));
+    modes.forEach(b=>b.setAttribute('aria-pressed',b.dataset.h===mode));aboutBtn.setAttribute('aria-pressed',about);}
+  modes.forEach(b=>b.onclick=()=>{mode=b.dataset.h;load();});aboutBtn.onclick=()=>{about=!about;load();};
+  document.querySelectorAll('[data-open]').forEach(a=>a.target='_blank');
+  load();
+</script>
+</body>
+</html>
