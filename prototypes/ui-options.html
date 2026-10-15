@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<title>UI options</title>
+<title>UI options round 4</title>
 <style>
   :root{--bg:#0d0f13;--ink:#f3f2ee;--mute:rgba(243,242,238,.62);--line:rgba(243,242,238,.14)}
   *{box-sizing:border-box;margin:0;padding:0}
@@ -14,32 +14,36 @@
   .ctrl button{all:unset;cursor:pointer;font-size:13px;padding:8px 14px;border-radius:999px;border:1px solid var(--line);color:var(--ink)}
   .ctrl button[aria-pressed="true"]{background:var(--ink);color:var(--bg)}
   .ctrl button:focus-visible{outline:2px solid var(--ink);outline-offset:2px}
-  .grid{display:grid;grid-template-columns:repeat(3,1fr);gap:18px}
+  .grid{display:grid;grid-template-columns:repeat(2,1fr);gap:18px}
   @media (max-width:1100px){.grid{grid-template-columns:1fr}}
   figure{display:flex;flex-direction:column;gap:10px}
   .frame{position:relative;aspect-ratio:16/10;border-radius:14px;overflow:hidden;border:1px solid var(--line);background:#000}
   iframe{position:absolute;inset:0;width:100%;height:100%;border:0}
   figcaption{display:flex;justify-content:space-between;gap:12px;font-size:13px;line-height:1.5}
   figcaption b{font-weight:600} figcaption p{color:var(--mute);margin-top:2px;max-width:46ch}
+  .ref{margin-top:22px;font-size:13px;color:var(--mute)} .ref a{color:var(--ink)}
   figcaption a{color:var(--ink);white-space:nowrap;font-size:13px}
 </style>
 </head>
 <body>
 <header>
-  <h1>Juangarcia<span>(mx)</span> — UI options</h1>
+  <h1>Juangarcia<span>(mx)</span> — UI options, round 4 <span>· readability on the grain</span></h1>
   <div class="ctrl" role="group" aria-label="Scene for all three">
     <button data-h="day" aria-pressed="true">(Sun)</button><button data-h="night" aria-pressed="false">(Moon)</button><button data-h="ocean" aria-pressed="false">(Ocean)</button>
     <button data-about aria-pressed="false">(About open)</button>
   </div>
 </header>
 <div class="grid">
-  <figure><div class="frame"><iframe data-ui="frosted" title="Option A, frosted"></iframe></div>
-    <figcaption><div><b>A · Frosted</b><p>Heavy milky blur, soft tint, almost no distortion. Calm and readable, the scene becomes colour behind it.</p></div><a data-open="frosted" href="#">Full screen ↗</a></figcaption></figure>
-  <figure><div class="frame"><iframe data-ui="glass" title="Option B, realistic glass"></iframe></div>
-    <figcaption><div><b>B · Realistic glass</b><p>Clear, sharp glass: the scene is seen through it, bent at the edges, with a top glare and crisp rim. Most crafted, least calm.</p></div><a data-open="glass" href="#">Full screen ↗</a></figcaption></figure>
-  <figure><div class="frame"><iframe data-ui="solid" title="Option C, always accessible"></iframe></div>
-    <figcaption><div><b>C · Always accessible</b><p>Opaque ink surface with light text in every mode, 44 px targets and strong focus rings. Readable over anything.</p></div><a data-open="solid" href="#">Full screen ↗</a></figcaption></figure>
+  <figure><div class="frame"><iframe data-ui="clear" title="Clear &amp; very blurred · before"></iframe></div>
+    <figcaption><div><b>Clear &amp; very blurred · before</b><p>Round 3 version, for comparison: no tint, ~2.4× blur, full glare and rim.</p></div><a data-open="clear" href="#">Full screen ↗</a></figcaption></figure>
+  <figure><div class="frame"><iframe data-ui="cleardim" title="Clear · dimmed"></iframe></div>
+    <figcaption><div><b>Clear · dimmed</b><p>Same blur, ~30% less light through the glass and a softer glare and rim, so the glass never outshines the white text and icons. All text on the glass is white, the About panel too.</p></div><a data-open="cleardim" href="#">Full screen ↗</a></figcaption></figure>
+  <figure><div class="frame"><iframe data-ui="auto" title="Auto-contrast · before"></iframe></div>
+    <figcaption><div><b>Auto-contrast · before</b><p>Round 3 version, for comparison: text flips to white or ink from the brightness behind it.</p></div><a data-open="auto" href="#">Full screen ↗</a></figcaption></figure>
+  <figure><div class="frame"><iframe data-ui="whitetext" title="White text, no containers"></iframe></div>
+    <figcaption><div><b>White text, no containers</b><p>Every text white, always. Where the scene is bright, it is softened very gently behind the UI with a 26 px feather, so no shape shows. Over dark areas nothing changes.</p></div><a data-open="whitetext" href="#">Full screen ↗</a></figcaption></figure>
 </div>
+<p class="ref">Also: <a href="v2-ui-options.html?ui=tinted#day" target="_blank">B2 tinted ↗</a> · <a href="v2-ui-options.html?ui=white#day" target="_blank">plain white ↗</a> · <a href="v2-ui-options.html?ui=invert#day" target="_blank">inverted ↗</a> · Reference: <a href="v2-sun-moon-field.html" target="_blank">the live glass ↗</a> · <a href="ui-options-round1.html">round 1 (frosted / glass / solid)</a></p>
 <script>
   const frames=[...document.querySelectorAll('iframe')],modes=[...document.querySelectorAll('[data-h]')],aboutBtn=document.querySelector('[data-about]');
   let mode='day',about=false;

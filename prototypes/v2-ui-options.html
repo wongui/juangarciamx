@@ -2,24 +2,24 @@
 <html lang="en">
 <head>
 <meta charset="utf-8">
-<meta name="viewport" content="width=device-width,initial-scale=1">
-<title>Juangarcia(mx) — UI options</title>
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Juangarcia(mx) — UI options, round 3</title>
 <style>
   :root{ --ink:#fff; --mute:rgba(255,255,255,.82); --acc:#fff; }
   *{box-sizing:border-box;margin:0;padding:0}
   html,body{height:100%;background:#3a6fb5;overflow:hidden;color:var(--ink);
     font-family:"Helvetica Neue",Helvetica,Inter,Arial,sans-serif;-webkit-font-smoothing:antialiased}
-  body.night{background:#05060a}
-  canvas{position:fixed;inset:0;width:100%;height:100%;display:block;opacity:0;transition:opacity 2s ease;touch-action:none;cursor:grab}
+  body.night{background:#05060a} body.ocean{background:#8a7398}
+  canvas{position:fixed;top:0;left:0;width:100%;height:100vh;height:100lvh;display:block;opacity:0;transition:opacity 2s ease;touch-action:none;cursor:grab}
   canvas:active{cursor:grabbing}
   body.ready canvas{opacity:1}
-  .ui{position:fixed;inset:0;pointer-events:none;padding:28px 32px;display:grid;
+  .ui{position:fixed;inset:0;pointer-events:none;padding:calc(28px + env(safe-area-inset-top)) calc(32px + env(safe-area-inset-right)) calc(28px + env(safe-area-inset-bottom)) calc(32px + env(safe-area-inset-left));display:grid;
     grid-template-columns:1fr auto 1fr;grid-template-rows:auto 1fr auto;gap:12px;text-shadow:0 1px 12px rgba(10,30,60,.28)}
   .ui > *{pointer-events:auto}
   .brand{grid-column:1;grid-row:1;align-self:start}
-  .brand .name{font-size:22px;font-weight:600;letter-spacing:-.02em}
-  .brand .paren{font-size:22px;font-weight:300;color:rgba(255,255,255,.72);margin-left:2px}
-  .brand p{margin-top:10px;font-size:13px;line-height:1.45;color:var(--mute);max-width:260px}
+  .brand .name{font-size:34px;font-weight:600;letter-spacing:-.025em;line-height:1.05}
+  .brand .paren{font-size:34px;font-weight:300;line-height:1.05;color:rgba(255,255,255,.72);margin-left:3px}
+  .brand p{margin-top:12px;font-size:13px;line-height:1.45;color:var(--mute);max-width:260px}
   .right{grid-column:3;grid-row:1;justify-self:end;display:flex;flex-direction:column;align-items:flex-end;gap:14px}
   .meta{text-align:right;font-size:12px;line-height:1.6;color:var(--mute)}
   .glass{background:transparent;border-radius:999px}
@@ -34,7 +34,6 @@
   .nav button:hover,.nav button:focus-visible{background:rgba(255,255,255,.2)}
   body.night .nav button:hover,body.night .nav button:focus-visible{background:rgba(255,255,255,.16);color:var(--acc)}
   .nav button:focus-visible{outline:1px solid #fff}
-  .hint{grid-column:1;grid-row:3;align-self:end;font-size:12px;color:var(--mute)}
   .proto{grid-column:3;grid-row:3;align-self:end;justify-self:end;font-size:11px;color:rgba(255,255,255,.6);text-align:right}
   .toast{position:fixed;left:50%;bottom:92px;transform:translate(-50%,8px);font-size:12px;color:#fff;opacity:0;transition:all .4s;pointer-events:none;text-shadow:0 1px 10px rgba(0,0,0,.4)}
   .toast.on{opacity:1;transform:translate(-50%,0)}
@@ -53,28 +52,70 @@
   .panel .row{display:flex;justify-content:space-between;align-items:center;margin-top:22px}
   .panel a{color:#2E5E1A;text-decoration:none;font-size:14px} body.night .panel a{color:var(--acc)}
   .panel .close{all:unset;cursor:pointer;font-size:13px;opacity:.6} .panel .close:hover{opacity:1}
-  /* hover on every unselected mode button (the menu already has one) */
-  .mode button:not([aria-pressed="true"]):hover{background:rgba(255,255,255,.2);color:#fff}
-  body.night .mode button:not([aria-pressed="true"]):hover{background:rgba(255,255,255,.14)}
-  body.ui-solid .mode button:not([aria-pressed="true"]):hover{background:rgba(255,255,255,.18)}
-  /* B · realistic glass: white text with a soft shadow so it reads over the sharp scene */
-  body.ui-glass .nav button,body.ui-glass .mode button{text-shadow:0 1px 8px rgba(0,0,0,.45)}
-  body.ui-glass .panel,body.ui-glass .panel .lbl,body.ui-glass .panel a{color:#fff;text-shadow:0 1px 10px rgba(0,0,0,.5)}
-  body.ui-glass .mode button[aria-pressed="true"]{text-shadow:none}
-  /* C · always accessible: light text on an opaque ink surface in every mode, 44px targets, strong focus rings */
-  body.ui-solid .mode button{color:rgba(255,255,255,.9);min-width:44px;min-height:44px;padding:0 12px}
-  body.ui-solid .mode button[aria-pressed="true"]{background:#fff;color:#0b0d12}
-  body.ui-solid .nav button{min-height:44px;box-sizing:border-box;color:#fff}
-  body.ui-solid .nav button:hover,body.ui-solid .nav button:focus-visible{background:rgba(255,255,255,.18);color:#fff}
-  body.ui-solid .mode button:focus-visible,body.ui-solid .nav button:focus-visible,body.ui-solid .panel a:focus-visible,body.ui-solid .panel .close:focus-visible{outline:2px solid #fff;outline-offset:2px}
-  body.ui-solid .panel{color:#F3F2EE} body.ui-solid .panel p{opacity:.92} body.ui-solid .panel .caps{opacity:.78}
-  body.ui-solid .panel .lbl,body.ui-solid .panel a{color:#fff} body.ui-solid .panel .close{opacity:.85}
-  /* A · frosted: night text stays light; day/ocean stays dark on the milky surface */
+  /* text: white with a soft shadow over the scene and the light glass; the frosted About panel takes dark text by sun and ocean */
+  .nav button,.mode button{text-shadow:0 1px 8px rgba(0,0,0,.45)}
+  .mode button[aria-pressed="true"]{text-shadow:none}
+  .panel,.panel .lbl,.panel a{color:#111316;text-shadow:none}
+  body.night .panel,body.night .panel .lbl,body.night .panel a{color:#fff;text-shadow:none}
+  /* menu microinteraction: the brand brackets appear on hover/focus, sliding out from the word into the padding (no reflow) */
+  .nav .w{position:relative}
+  .nav .p{position:absolute;top:0;opacity:0;pointer-events:none;transition:opacity .22s ease,transform .38s cubic-bezier(.2,.8,.2,1)}
+  .nav .p.l{right:100%;transform:translateX(5px)} .nav .p.r{left:100%;transform:translateX(-5px)}
+  .nav button:hover .p,.nav button:focus-visible .p{opacity:1;transform:none}
+  @media (prefers-reduced-motion:reduce){.nav .p{transition:opacity .2s ease;transform:none!important}}
+  /* hover on every unselected option of both menus */
+  .nav button:hover,.mode button:not([aria-pressed="true"]):hover{background:rgba(255,255,255,.22);color:#fff}
+  body.night .nav button:hover,body.night .mode button:not([aria-pressed="true"]):hover{background:rgba(255,255,255,.14);color:#fff}
+  /* I · inverted, no containers: every UI pixel inverts what is behind it (difference blend), so it reads on light and dark */
+  body.ui-invert .ui,body.ui-invert #about{mix-blend-mode:difference}
+  body.ui-invert .ui,body.ui-invert .ui *,body.ui-invert .panel,body.ui-invert .panel *{color:#fff!important;text-shadow:none!important}
+  body.ui-invert .brand .paren{opacity:.8}
+  body.ui-invert .mode button[aria-pressed="true"]{background:transparent!important;box-shadow:inset 0 0 0 1.5px #fff}
+  body.ui-invert .mode button:hover,body.ui-invert .nav button:hover,body.ui-invert .nav button:focus-visible{background:transparent!important}
+  body.ui-invert .nav button{font-weight:500} body.ui-invert .panel p{opacity:1;font-weight:500} body.ui-invert .panel h2{font-weight:600} body.ui-invert .panel .caps{opacity:.85}
+  body.ui-invert .panel a{text-decoration:underline;text-underline-offset:3px}
+  /* A · auto-contrast, no containers: each element's text flips white / ink from the measured brightness behind it */
+  body.ui-auto .brand,body.ui-auto .mode,body.ui-auto .nav,body.ui-auto .panel{--c:#fff}
+  body.ui-auto .brand *,body.ui-auto .mode button,body.ui-auto .nav button,body.ui-auto .panel,body.ui-auto .panel *{color:var(--c)!important;text-shadow:none!important;transition:color .6s ease,background .3s,box-shadow .3s}
+  body.ui-auto .brand .paren{opacity:.75}
+  body.ui-auto .mode button[aria-pressed="true"]{background:transparent!important;box-shadow:inset 0 0 0 1.5px var(--c)}
+  body.ui-auto .mode button:hover,body.ui-auto .nav button:hover,body.ui-auto .nav button:focus-visible{background:transparent!important}
+  body.ui-auto .nav button{font-weight:500} body.ui-auto .panel p{opacity:1;font-weight:500} body.ui-auto .panel h2{font-weight:600} body.ui-auto .panel .caps{opacity:.85}
+  body.ui-auto .panel a{text-decoration:underline;text-underline-offset:3px}
+  /* cleardim + whitetext: every text white */
+  body.ui-cleardim .panel,body.ui-cleardim .panel .lbl,body.ui-cleardim .panel a{color:#fff!important;text-shadow:none}
+  body.ui-whitetext .ui *,body.ui-whitetext .panel,body.ui-whitetext .panel *{color:#fff!important;text-shadow:none!important}
+  body.ui-whitetext .brand .paren{opacity:.8}
+  body.ui-whitetext .mode button[aria-pressed="true"]{background:transparent!important;box-shadow:inset 0 0 0 1.5px #fff}
+  body.ui-whitetext .mode button:hover,body.ui-whitetext .nav button:hover,body.ui-whitetext .nav button:focus-visible{background:transparent!important}
+  body.ui-whitetext .nav button{font-weight:500} body.ui-whitetext .panel p{opacity:1;font-weight:500} body.ui-whitetext .panel h2{font-weight:600} body.ui-whitetext .panel .caps{opacity:.88}
+  body.ui-whitetext .panel a{text-decoration:underline;text-underline-offset:3px}
+  /* W · plain white: opaque white surfaces, ink text, microinteractions */
+  body.ui-white .mode,body.ui-white .nav,body.ui-white .panel{background:#fff;box-shadow:0 10px 30px rgba(10,20,40,.18),0 1px 2px rgba(10,20,40,.12)}
+  body.ui-white .mode,body.ui-white .nav{position:relative;isolation:isolate}
+  body.ui-white .mode button,body.ui-white .nav button,body.ui-white .panel,body.ui-white .panel .lbl,body.ui-white .panel a,body.ui-white.night .panel,body.ui-white.night .panel .lbl,body.ui-white.night .panel a{color:#111316;text-shadow:none}
+  body.ui-white .mode button[aria-pressed="true"],body.ui-white.night .mode button[aria-pressed="true"]{background:transparent;color:#fff}
+  body.ui-white .mode button:not([aria-pressed="true"]):hover,body.ui-white .nav button:hover,body.ui-white.night .nav button:hover,body.ui-white.night .mode button:not([aria-pressed="true"]):hover{background:transparent;color:#111316}
+  body.ui-white .mode button,body.ui-white .nav button{transition:transform .2s cubic-bezier(.3,1.6,.5,1),color .3s}
+  body.ui-white .mode button:active,body.ui-white .nav button:active{transform:scale(.94)}
+  body.ui-white .mode button svg{transition:transform .5s cubic-bezier(.3,1.5,.5,1)}
+  body.ui-white #mDay:hover svg{transform:rotate(45deg)} body.ui-white #mNight:hover svg{transform:rotate(-18deg)} body.ui-white #mWater:hover svg{transform:translateX(2px)}
+  body.ui-white .thumb,body.ui-white .hov{position:absolute;z-index:-1;border-radius:999px;pointer-events:none;transition:transform .5s cubic-bezier(.3,1.25,.4,1),width .5s cubic-bezier(.3,1.25,.4,1),opacity .25s}
+  body.ui-white .thumb{background:#111316} body.ui-white .hov{background:#eef0f2;opacity:0}
+  body.ui-white .nav:hover .hov{opacity:1}
+  body.ui-white .mode button:focus-visible,body.ui-white .nav button:focus-visible{outline:2px solid #111316;outline-offset:2px}
+  body.ui-white .panel a{display:inline-block;transition:transform .3s cubic-bezier(.3,1.5,.5,1)} body.ui-white .panel a:hover{transform:translateX(4px)}
+  body.ui-white .panel>*{opacity:0;transform:translateY(10px);transition:opacity .5s ease,transform .7s cubic-bezier(.2,.8,.2,1)}
+  body.ui-white #about.on .panel>*{opacity:1;transform:none}
+  body.ui-white #about.on .panel>:nth-child(1){transition-delay:1s} body.ui-white #about.on .panel>:nth-child(2){transition-delay:1.07s}
+  body.ui-white #about.on .panel>:nth-child(3){transition-delay:1.14s} body.ui-white #about.on .panel>:nth-child(4){transition-delay:1.21s}
+  body.ui-white #about.on .panel>:nth-child(5){transition-delay:1.28s} body.ui-white #about.on .panel>:nth-child(6){transition-delay:1.35s}
+  @media (prefers-reduced-motion:reduce){body.ui-white .thumb,body.ui-white .hov,body.ui-white .panel>*{transition:opacity .2s ease!important}}
   #err{position:fixed;left:20px;top:80px;right:20px;font:12px/1.4 monospace;color:#f66;white-space:pre-wrap}
   @media (max-width:700px){
-    .ui{padding:20px;grid-template-columns:1fr 1fr;grid-template-rows:auto 1fr auto auto}
+    .ui{padding:calc(20px + env(safe-area-inset-top)) calc(20px + env(safe-area-inset-right)) calc(20px + env(safe-area-inset-bottom)) calc(20px + env(safe-area-inset-left));grid-template-columns:1fr 1fr;grid-template-rows:auto 1fr auto auto}
     .right{grid-column:2} .nav{grid-column:1 / span 2;grid-row:3} .nav button{padding:9px 12px;font-size:13px}
-    .hint{grid-column:1;grid-row:4} .proto{grid-column:2;grid-row:4} .brand p{display:none} .meta{display:none}
+    .brand p{display:none} .brand .name,.brand .paren{font-size:28px}
   }
 </style>
 </head>
@@ -82,9 +123,8 @@
 <canvas id="c" aria-label="A field with a giant glowing buried sculpture. Day: dragonflies under a blue sky. Night: fireflies under the moon."></canvas>
 <div class="ui">
   <div class="brand"><span class="name">Juangarcia</span><span class="paren">(mx)</span>
-    <p>Designing what's next — and building it. Visual design, 3D and code, grounded in people.</p></div>
+    <p>Designing what's next, and building it. Visual design, 3D and code, grounded in people.</p></div>
   <div class="right">
-    <div class="meta">(Senior Visual Designer)<br>(From Mexico, based in San Francisco)</div>
     <div class="mode glass" role="group" aria-label="Scene mode">
       <button id="mDay" aria-pressed="true" aria-label="Day" title="Day"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><circle cx="12" cy="12" r="4.2"/><path d="M12 2.5v2.2M12 19.3v2.2M2.5 12h2.2M19.3 12h2.2M5.3 5.3l1.6 1.6M17.1 17.1l1.6 1.6M5.3 18.7l1.6-1.6M17.1 6.9l1.6-1.6"/></svg></button>
       <button id="mNight" aria-pressed="false" aria-label="Night" title="Night"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"><path d="M20 14.5A8.5 8.5 0 0 1 9.5 4a8.5 8.5 0 1 0 10.5 10.5z"/></svg></button>
@@ -92,10 +132,8 @@
     </div>
   </div>
   <nav class="nav glass" aria-label="Main">
-    <button data-k="lab">(Lab)</button><button data-k="work">(Work)</button><button data-k="art">(Art)</button><button data-k="about">(About)</button>
+    <button data-k="lab"><span class="w"><span class="p l" aria-hidden="true">(</span>Lab<span class="p r" aria-hidden="true">)</span></span></button><button data-k="work"><span class="w"><span class="p l" aria-hidden="true">(</span>Work<span class="p r" aria-hidden="true">)</span></span></button><button data-k="art"><span class="w"><span class="p l" aria-hidden="true">(</span>Art<span class="p r" aria-hidden="true">)</span></span></button><button data-k="about"><span class="w"><span class="p l" aria-hidden="true">(</span>About<span class="p r" aria-hidden="true">)</span></span></button>
   </nav>
-  <div class="hint" id="hint">(Move) (Drag) — the dragonflies follow you</div>
-  <div class="proto" id="uiLabel">UI option</div>
 </div>
 <div class="toast" id="toast"></div>
 <section id="about" aria-hidden="true" role="dialog" aria-label="About Juan" aria-modal="true">
@@ -122,8 +160,8 @@ if(!gl) throw new Error('WebGL2 not available');
 const hasF=!!gl.getExtension('EXT_color_buffer_float');
 const FMT=hasF?gl.RGBA16F:gl.RGBA8, TYPE=hasF?gl.HALF_FLOAT:gl.UNSIGNED_BYTE;
 const reduce=matchMedia('(prefers-reduced-motion: reduce)').matches;
-// UI option from the address: ?ui=frosted | glass | solid (anything else = the current glass)
-const UI=new URLSearchParams(location.search).get('ui')||'current',UI_IDX={frosted:1,glass:2,solid:3}[UI]||0;document.body.classList.add('ui-'+UI);
+// UI variant: ?ui=tinted | clear | cleardim | white | invert | auto | whitetext (anything else = the live glass)
+const UI=new URLSearchParams(location.search).get('ui')||'live',UI_IDX={tinted:2,white:4,clear:5,invert:6,auto:7,cleardim:8,whitetext:9}[UI]||0;document.body.classList.add('ui-'+UI);
 const mobile=Math.min(innerWidth,innerHeight)<700||/Mobi|Android/i.test(navigator.userAgent);
 
 /* ---------- math ---------- */
@@ -211,6 +249,8 @@ function prog(vs,fs){const p=gl.createProgram();
   return {p,u};}
 const FSVS=`out vec2 vUv;void main(){vec2 p=vec2((gl_VertexID<<1)&2,gl_VertexID&2);vUv=p;gl_Position=vec4(p*2.-1.,0.,1.);}`;
 const SHADOW_DEPTH='0.04';   // how dark the sculpture's crevices get (1 = no shadows, 0 = black)
+const SHADOW_LAYERS=(()=>{const v=parseFloat(new URLSearchParams(location.search).get('shadow'));return (v>=1&&v<=4?v:2).toFixed(2);})();   // how many times the baked shadow is stacked (multiply); try ?shadow=1, 2, 3
+const GRAIN_RATE='3.0';   // cinema grain: new patterns per second, each dissolving into the next (24 = original film rate)
 const SAFE=`vec3 safe(vec3 c){return (any(isnan(c))||any(isinf(c)))?vec3(0.):clamp(c,0.,64.);}`;
 
 const P={
@@ -345,12 +385,13 @@ const P={
   out vec3 vN;out vec3 vW;out float vAO;void main(){vAO=aAO;vW=aP*uExt*uS+vec3(0.,uY,0.);vW.y+=aPart>1.5?uLift.y:aPart>0.5?uLift.x:0.;vN=aN;gl_Position=uVP*vec4(vW,1.);}`,
   `in vec3 vN;in vec3 vW;in float vAO;out vec4 o;uniform float uGlow;uniform float uExpo;uniform float uClipY;${NOISE}${SKY}${LIGHT}
   #define SHADOW_DEPTH ${SHADOW_DEPTH}
+  #define SHADOW_LAYERS ${SHADOW_LAYERS}
   void main(){if(vW.y<uClipY)discard;vec3 n=normalize(vN+vec3(1e-5));float cav=1.;if(!gl_FrontFacing){n=-n;cav=0.55;}vec3 v=normalize(uCam-vW);float fr=clamp(1.-abs(dot(n,v)),0.,1.);
    float occ=mix(0.22,1.,smoothstep(-0.8,0.4,n.y));float sun=mix(mix(0.32,1.,smoothstep(-0.2,0.6,dot(n,uSun))),1.,uMode);
    float pulse=0.96+0.04*sin(uTime*0.9);
    float shade=mix(0.4,1.,smoothstep(-0.2,0.6,dot(n,vec3(${SUN_D.join(',')}))));   // the sculpture keeps the day key light in every mode, so it looks the same everywhere
-   float sh=mix(SHADOW_DEPTH,1.,pow(vAO,2.2));   // baked crevice shadows darken the body only; the rim glow (fr) stays full
-   vec3 c=vec3(1.,0.98,0.95)*(3.6*occ*shade*sh+5.*pow(fr,2.)*mix(0.7,1.,sh))*uGlow*pulse/uExpo;
+   float sh=pow(mix(SHADOW_DEPTH,1.,pow(vAO,2.2)),SHADOW_LAYERS);   // baked crevice shadows, stacked like a duplicated multiply layer; darken the body only, the rim glow (fr) keeps its own lighter shadow
+   vec3 c=vec3(1.,0.98,0.95)*(3.6*occ*shade*sh+5.*pow(fr,2.)*mix(0.7,1.,sqrt(sh)))*uGlow*pulse/uExpo;
    c*=mix(0.6,1.,smoothstep(0.,1.4,vW.y))*cav;o=vec4(c,1.);}`),
  fly:prog(`layout(location=0) in vec3 aP;layout(location=1) in vec3 aN;layout(location=2) in vec2 aW;
   layout(location=3) in vec4 aI0;layout(location=4) in vec4 aI1;uniform mat4 uVP;uniform float uTime;
@@ -397,42 +438,49 @@ const P={
  blur:prog(FSVS,`in vec2 vUv;out vec4 o;uniform sampler2D uT;uniform vec2 uDir;
   void main(){vec3 c=texture(uT,vUv).rgb*0.227027;c+=(texture(uT,vUv+uDir*1.384615).rgb+texture(uT,vUv-uDir*1.384615).rgb)*0.316216;
    c+=(texture(uT,vUv+uDir*3.230769).rgb+texture(uT,vUv-uDir*3.230769).rgb)*0.070270;o=vec4(c,1.);}`),
- comp:prog(FSVS,`in vec2 vUv;out vec4 o;uniform sampler2D uS,uB0,uB1,uB2,uB3,uF;uniform float uTime,uDim,uFade,uExp,uDpr;uniform vec2 uRes;uniform vec4 uGR[4];uniform vec4 uGP[4];uniform int uGN;uniform int uUI;${SAFE}
+ comp:prog(FSVS,`in vec2 vUv;out vec4 o;uniform sampler2D uS,uB0,uB1,uB2,uB3,uF;uniform float uTime,uDim,uFade,uExp,uDpr;uniform vec2 uRes;uniform vec4 uGR[4];uniform vec4 uGP[4];uniform int uGN;uniform int uUI;uniform float uStill;${SAFE}
+  // ---- cinema print texture (environment only: applied before the glass, so UI glass and HTML text stay clean)
+  uint pcg(uint v){uint s=v*747796405u+2891336453u;uint w=((s>>((s>>28u)+4u))^s)*277803737u;return (w>>22u)^w;}
+  float hh(vec2 p,float f){uvec2 q=uvec2(ivec2(floor(p))+ivec2(65536));return float(pcg(q.x+pcg(q.y+pcg(uint(f)))))*(1./4294967295.);}
+  float vn(vec2 p,float f){vec2 i=floor(p),u=fract(p);u=u*u*(3.-2.*u);return mix(mix(hh(i,f),hh(i+vec2(1,0),f),u.x),mix(hh(i+vec2(0,1),f),hh(i+1.,f),u.x),u.y);}
+  float grain(vec2 Pc,float f){vec2 p=(Pc+vec2(hh(vec2(f,3.),2.),hh(vec2(f,4.),2.))*512.)/0.9;return vn(p,f)*0.6+hh(p,f)*0.4-0.5;}
+
   vec3 aces(vec3 x){return clamp((x*(2.51*x+0.03))/(x*(2.43*x+0.59)+0.14),0.,1.);}
   float sdR(vec2 p,vec2 b,float r){vec2 q=abs(p)-b+r;return length(max(q,0.))+min(max(q.x,q.y),0.)-r;}
+  #define GRAIN_RATE ${GRAIN_RATE}
   void main(){vec3 c=safe(texture(uS,vUv).rgb);
+   {vec2 d=(vUv-0.5)*dot(vUv-0.5,vUv-0.5)*0.012;c=vec3(safe(texture(uS,vUv+d).rgb).r,c.g,safe(texture(uS,vUv-d).rgb).b);}   // faint lens colour split toward the corners
    vec3 b=texture(uB0,vUv).rgb*0.6+texture(uB1,vUv).rgb*0.7+texture(uB2,vUv).rgb*0.6+texture(uB3,vUv).rgb*0.45;
    c+=safe(b)*0.5;c*=uExp;c=aces(c);c=pow(c,vec3(1./2.2));
    vec2 q=vUv-0.5;c*=1.-dot(q,q)*0.6;
-   float g=fract(sin(dot(vUv*uRes+fract(uTime)*91.,vec2(12.9898,78.233)))*43758.5453);c+=(g-0.5)*0.02;
+   vec2 Pc=vUv*uRes/uDpr;float lu=dot(c,vec3(0.2126,0.7152,0.0722));
+   vec3 hw=safe(texture(uB2,vUv).rgb+texture(uB3,vUv).rgb);c+=pow(hw*uExp*0.5,vec3(1.1))*vec3(0.55,0.16,0.06)*0.22;   // warm halation around bright light
+   c*=1.-smoothstep(0.18,0.75,length(q*vec2(1.,0.8)))*0.35;   // deeper lens vignette
+   float ft=uStill>0.5?1.:uTime*GRAIN_RATE,f=floor(ft),k=uStill>0.5?0.:smoothstep(0.,1.,fract(ft));   // grain slowly dissolves from one pattern into the next; still with reduced motion
+   float n=mix(grain(Pc,f),grain(Pc,f+1.),k)/sqrt(k*k+(1.-k)*(1.-k));   // strength stays constant through the dissolve
+   c+=n*0.075*mix(0.5,1.,clamp(4.*lu*(1.-lu),0.,1.));
+   c*=1.+(uStill>0.5?0.:(mix(hh(vec2(f,9.),8.),hh(vec2(f+1.,9.),8.),k)-0.5)*0.018);   // barely-there projector flicker
    c=mix(c,vec3(dot(c,vec3(0.3,0.59,0.11))),uDim*0.2);c*=uFade;
-   // ---- glass: frosted blur + lens refraction at the edges + chromatic fringe + specular rim + soft shadow
+   // ---- glass (option B, 'clear glass'): lightly blurred scene seen through a lens that bends at the bevel, colour fringe at the edge, top glare, crisp rim, soft shadow
    vec2 P=vUv*uRes;vec2 L=normalize(vec2(-0.55,0.85));
    for(int i=0;i<4;i++){if(i>=uGN)break;vec4 R=uGR[i],Q=uGP[i];vec2 hb=R.zw*0.5,ce=R.xy+hb;float rr=min(Q.x,min(hb.x,hb.y));
     float d=sdR(P-ce,hb,rr);float a=Q.y;
+    if(uUI==9){float lum=dot(pow(aces(safe(texture(uF,P/uRes).rgb)*uExp),vec3(1./2.2)),vec3(0.2126,0.7152,0.0722));   // white text, no container: soften the scene behind the UI only where it is bright, feathered so no shape shows
+     c*=1.-smoothstep(0.32,0.78,lum)*0.42*exp(-max(d,0.)/(26.*uDpr))*a;continue;}
     if(d>0.){c*=1.-a*0.16*exp(-d/(14.*uDpr))*(1.-smoothstep(ce.y-hb.y,ce.y+hb.y*0.3,P.y));continue;}
     vec2 g=normalize(vec2(sdR(P-ce+vec2(1,0),hb,rr)-sdR(P-ce-vec2(1,0),hb,rr),sdR(P-ce+vec2(0,1),hb,rr)-sdR(P-ce-vec2(0,1),hb,rr))+1e-6);
     float bev=min(22.*uDpr,min(hb.x,hb.y)*0.9),e=clamp(-d/bev,0.,1.),lens=pow(1.-e,2.4);
-    float lt=max(dot(g,L),0.),dk=max(dot(g,-L),0.),rim=1.-smoothstep(0.,1.6*uDpr,-d);vec3 gc;
-    if(uUI==1){   // A · frosted: heavy milky blur, barely any lens, soft edge, fine grain
-     vec2 off=-g*lens*bev*0.35;vec3 fr=vec3(0.);for(int k=0;k<12;k++){float an=float(k)*2.39996;fr+=texture(uF,(P+off+vec2(cos(an),sin(an))*sqrt(float(k)+0.5)*7.*uDpr)/uRes).rgb;}fr/=12.;
-     gc=pow(aces(safe(fr)*uExp),vec3(1./2.2))*uFade;gc=mix(gc,mix(vec3(0.95,0.955,0.965),vec3(0.06,0.065,0.08),Q.z),mix(0.4,0.52,Q.z));
-     gc+=(fract(sin(dot(P,vec2(12.9898,78.233)))*43758.5453)-0.5)*0.03;gc+=(1.-e)*lt*0.07;gc+=rim*(0.1+0.25*lt)*mix(1.,0.6,Q.z);}
-    else if(uUI==2){   // B · realistic glass: sharp scene through a magnifying lens, strong bevel bending, colour fringe, top glare
-     float bl=pow(1.-e,4.);vec2 off=-g*bl*bev*1.3+(P-ce)*-0.05;vec2 fo=-g*bl*bev*0.12;
-     vec3 fr=vec3(0.);for(int k=0;k<8;k++){float an=float(k)*2.39996;vec2 q=P+off+vec2(cos(an),sin(an))*sqrt(float(k)+0.5)*1.3*uDpr;   // light blur (~3-4 px) of the sharp scene, seen through the lens; fringe only at the bevel
-      fr+=vec3(texture(uS,q/uRes).r,texture(uS,(q+fo)/uRes).g,texture(uS,(q+fo*2.)/uRes).b);}fr/=8.;
-     gc=pow(aces(safe(fr)*uExp),vec3(1./2.2))*uFade;gc=mix(gc,mix(vec3(0.96),vec3(0.06),Q.z),0.1);
-     gc+=0.2*pow(clamp((P.y-ce.y)/hb.y,0.,1.),3.)*mix(1.,0.5,Q.z);gc+=(1.-e)*lt*0.3;gc*=1.-(1.-e)*dk*0.22;gc+=rim*(0.3+0.8*lt)*mix(1.,0.7,Q.z);}
-    else if(uUI==3){   // C · always accessible: opaque ink surface in every mode, subtle rim only
-     gc=mix(vec3(0.06,0.065,0.078),vec3(0.1,0.105,0.12),clamp((P.y-ce.y)/hb.y*0.5+0.5,0.,1.))*uFade;gc+=rim*(0.1+0.22*lt);a=1.;}
-    else{
-     vec2 off=-g*lens*bev*1.1;
-     vec3 fr=vec3(texture(uF,(P+off)/uRes).r,texture(uF,(P+off*1.07)/uRes).g,texture(uF,(P+off*1.14)/uRes).b);
-     gc=pow(aces(safe(fr)*uExp),vec3(1./2.2))*uFade;
-     vec3 tint=mix(vec3(0.97,0.975,0.98),vec3(0.05,0.055,0.07),Q.z);gc=mix(gc,tint,Q.w);
-     gc+=(1.-e)*lt*0.16;gc*=1.-(1.-e)*dk*0.10;
-     gc+=rim*(0.18+0.55*lt)*mix(1.,0.6,Q.z);}
+    float lt=max(dot(g,L),0.),dk=max(dot(g,-L),0.),rim=1.-smoothstep(0.,1.6*uDpr,-d);
+    float bl=pow(1.-e,4.);vec2 off=-g*bl*bev*1.3+(P-ce)*-0.05;vec2 fo=-g*bl*bev*0.12;
+    vec3 fr=vec3(0.);float jr=fract(sin(dot(P,vec2(12.9898,78.233)))*43758.5453)*6.283;   // random rotation per pixel: the blur reads as fine frost, not a dot pattern
+    for(int k=0;k<16;k++){float an=float(k)*2.39996+jr;vec2 q=P+off+vec2(cos(an),sin(an))*sqrt((float(k)+0.5)/16.)*abs(Q.w)*(uUI==2?1.7:(uUI==5||uUI==8)?2.4:1.)*uDpr;   // blur radius per element (Q.w, CSS px)
+     fr+=min(vec3(texture(uS,q/uRes).r,texture(uS,(q+fo)/uRes).g,texture(uS,(q+fo*2.)/uRes).b),vec3(2.5));}fr/=16.;   // capped so bright points (fireflies, glints) blur into soft glows, not dot patterns
+    vec3 gc=pow(aces(safe(fr)*uExp),vec3(1./2.2))*uFade;gc=mix(gc,mix(vec3(0.96),vec3(0.06),Q.z),mix(0.24,0.12,Q.z));   // lighter tint by sun/ocean so dark text keeps its contrast
+    // Q.w < 0 marks dark text on this element (About panel by sun/ocean); otherwise the text is white
+    if(uUI==5||uUI==8)gc=pow(aces(safe(fr)*uExp),vec3(1./2.2))*uFade;   // clear: no tint at all, just the heavier blur
+    if(uUI==8)gc*=0.7;   // clear, dimmed: ~30% less light through the glass so white text and icons always lead
+    else if(uUI==2)gc=mix(gc,Q.w<0.?vec3(0.97,0.975,0.98):vec3(0.05,0.055,0.07),0.24);   // B2: more blur + firmer tint against the text
+    float gk=uUI==8?0.35:1.;gc+=0.2*gk*pow(clamp((P.y-ce.y)/hb.y,0.,1.),3.)*mix(1.,0.5,Q.z);gc+=(1.-e)*lt*0.3*gk;gc*=1.-(1.-e)*dk*0.22;gc+=rim*(0.3+0.8*lt)*mix(1.,0.7,Q.z)*gk;
     c=mix(c,gc,a*(1.-smoothstep(-1.5,0.,d)));}
    o=vec4(c,1.);}`)
 };
@@ -604,7 +652,8 @@ function rt(w,h){const t=gl.createTexture();gl.bindTexture(gl.TEXTURE_2D,t);gl.t
   gl.texParameteri(gl.TEXTURE_2D,gl.TEXTURE_MIN_FILTER,gl.LINEAR);gl.texParameteri(gl.TEXTURE_2D,gl.TEXTURE_MAG_FILTER,gl.LINEAR);
   gl.texParameteri(gl.TEXTURE_2D,gl.TEXTURE_WRAP_S,gl.CLAMP_TO_EDGE);gl.texParameteri(gl.TEXTURE_2D,gl.TEXTURE_WRAP_T,gl.CLAMP_TO_EDGE);
   const f=gl.createFramebuffer();gl.bindFramebuffer(gl.FRAMEBUFFER,f);gl.framebufferTexture2D(gl.FRAMEBUFFER,gl.COLOR_ATTACHMENT0,gl.TEXTURE_2D,t,0);return {t,f,w,h};}
-function resize(){const dpr=Math.min(devicePixelRatio||1,mobile?1.5:1.75);const w=Math.floor(innerWidth*dpr),h=Math.floor(innerHeight*dpr);
+let CR=cv.getBoundingClientRect();
+function resize(){CR=cv.getBoundingClientRect();const dpr=Math.min(devicePixelRatio||1,mobile?1.5:1.75);const w=Math.floor(CR.width*dpr),h=Math.floor(CR.height*dpr);
   if(w===W&&h===H)return;W=cv.width=w;H=cv.height=h;
   owned.splice(0).forEach(o=>{o.t?(gl.deleteTexture(o.t),gl.deleteFramebuffer(o.f)):o.rb?gl.deleteRenderbuffer(o.rb):gl.deleteFramebuffer(o.fb);});
   const smp=Math.min(4,gl.getParameter(gl.MAX_SAMPLES));
@@ -628,17 +677,23 @@ const REST=[0.12,0.24],LIFT=[0.32,0.64],lift=REST.slice(),liftV=[0,0];   // inne
 let figH=0,figF=0,figHover=false,orbit=0,orbitV=0,ptrA=0,ptrW=[0,0,0],ptr3=[0,1.5,0],gHit=0,glow=1,swarm=[0,1,0,0];
 const hr=new Date().getHours();let night=/night/.test(location.hash)||(!/day|ocean/.test(location.hash)&&(hr<6||hr>=19)),mode=night?1:0;
 let water=/ocean/.test(location.hash),wat=water?1:0;const trans={v:1,ph:null};if(water)mode=0;
-const bDay=document.getElementById('mDay'),bNight=document.getElementById('mNight'),bWater=document.getElementById('mWater'),hint=document.getElementById('hint');
+const bDay=document.getElementById('mDay'),bNight=document.getElementById('mNight'),bWater=document.getElementById('mWater');
 function setMode(m){const w=m==='ocean';if(m==='night')night=true;if(m==='day')night=false;
   if(w!==water){water=w;trans.ph='out';}
   bDay.setAttribute('aria-pressed',m==='day');bNight.setAttribute('aria-pressed',m==='night');bWater.setAttribute('aria-pressed',w);
-  document.body.classList.toggle('night',m==='night');document.body.classList.toggle('ocean',w);
-  hint.textContent=w?'(Move) (Drag) — the water follows you':m==='night'?'(Move) (Drag) — the fireflies follow you':'(Move) (Drag) — the dragonflies follow you';}
+  document.body.classList.toggle('night',m==='night');document.body.classList.toggle('ocean',w);}
+if(UI_IDX===4){
+  const modeEl=document.querySelector('.mode'),navEl=document.querySelector('.nav'),thumb=document.createElement('span'),hov=document.createElement('span');
+  thumb.className='thumb';hov.className='hov';thumb.setAttribute('aria-hidden','true');hov.setAttribute('aria-hidden','true');modeEl.prepend(thumb);navEl.prepend(hov);
+  const place=(pill,host,b)=>{const hr=host.getBoundingClientRect(),r=b.getBoundingClientRect();pill.style.width=r.width+'px';pill.style.height=r.height+'px';pill.style.top=(r.top-hr.top)+'px';pill.style.left='0px';pill.style.transform=`translateX(${r.left-hr.left}px)`;};
+  const sync=()=>{const on=modeEl.querySelector('[aria-pressed="true"]');if(on)place(thumb,modeEl,on);};
+  new MutationObserver(sync).observe(modeEl,{attributes:true,subtree:true,attributeFilter:['aria-pressed']});addEventListener('resize',sync);requestAnimationFrame(sync);
+  navEl.querySelectorAll('button').forEach(b=>{b.addEventListener('pointerenter',()=>place(hov,navEl,b));b.addEventListener('focus',()=>{place(hov,navEl,b);hov.style.opacity=1;});b.addEventListener('blur',()=>hov.style.opacity='');});}
 setMode(water?'ocean':night?'night':'day');bDay.onclick=()=>setMode('day');bNight.onclick=()=>setMode('night');bWater.onclick=()=>setMode('ocean');
-cv.addEventListener('pointermove',e=>{ptr.nx=e.clientX/innerWidth*2-1;ptr.ny=1-e.clientY/innerHeight*2;ptr.last=performance.now();
+cv.addEventListener('pointermove',e=>{ptr.nx=(e.clientX-CR.left)/CR.width*2-1;ptr.ny=1-(e.clientY-CR.top)/CR.height*2;ptr.last=performance.now();
   // mouse/pen drag orbits the scene; touch drag only steers the swarm (on phones the orbit follows the device, see gyro below)
   if(ptr.down&&!ui.about&&e.pointerType!=='touch'){bake.lastDrag=performance.now();const dx=e.clientX-ptr.lx;orbit-=dx*0.0025;orbitV=-dx*0.0025*18;ptr.lx=e.clientX;}});
-cv.addEventListener('pointerdown',e=>{ptr.down=true;ptr.dx0=e.clientX;ptr.dy0=e.clientY;ptr.dt0=performance.now();ptr.lx=e.clientX;ptr.nx=e.clientX/innerWidth*2-1;ptr.ny=1-e.clientY/innerHeight*2;ptr.last=performance.now();cv.setPointerCapture(e.pointerId);});
+cv.addEventListener('pointerdown',e=>{ptr.down=true;ptr.dx0=e.clientX;ptr.dy0=e.clientY;ptr.dt0=performance.now();ptr.lx=e.clientX;ptr.nx=(e.clientX-CR.left)/CR.width*2-1;ptr.ny=1-(e.clientY-CR.top)/CR.height*2;ptr.last=performance.now();cv.setPointerCapture(e.pointerId);});
 addEventListener('pointerup',e=>{const wasDown=ptr.down;ptr.down=false;
   if(wasDown&&figHover&&!ui.about&&Math.hypot(e.clientX-ptr.dx0,e.clientY-ptr.dy0)<6&&performance.now()-ptr.dt0<600){
     figF=1;orbitV=0;setTimeout(()=>setAbout(true),160);}});
@@ -662,7 +717,6 @@ function startGyro(){if(gyro.armed)return;gyro.armed=true;
 if(matchMedia('(pointer:coarse)').matches){addEventListener('click',startGyro,{once:false});}
 const about=document.getElementById('about'),toast=document.getElementById('toast');let tt;
 function setAbout(on){ui.about=on;about.classList.toggle('on',on);document.body.classList.toggle('about',on);about.setAttribute('aria-hidden',!on);if(on)about.querySelector('.close').focus();}
-document.getElementById('uiLabel').textContent={frosted:'UI option A · Frosted',glass:'UI option B · Realistic glass',solid:'UI option C · Always accessible'}[UI]||'UI option · Current glass';
 document.querySelectorAll('.nav button').forEach(b=>b.addEventListener('click',()=>{const k=b.dataset.k;
   if(k==='about')return setAbout(true);toast.textContent='('+k[0].toUpperCase()+k.slice(1)+') — coming soon in this prototype';
   toast.classList.add('on');clearTimeout(tt);tt=setTimeout(()=>toast.classList.remove('on'),1800);glow=1.6;}));
@@ -670,7 +724,8 @@ about.addEventListener('click',e=>{if(e.target===about)setAbout(false);});about.
 addEventListener('keydown',e=>{if(e.key==='Escape')setAbout(false);});
 if(/about/.test(location.hash))setTimeout(()=>setAbout(true),600);
 
-const GLASS=[[document.querySelector('.mode'),document.querySelector('.ui'),0.16],[document.querySelector('.nav'),document.querySelector('.ui'),0.16],[document.querySelector('.panel'),document.getElementById('about'),0.42]];
+const AUTO={els:[document.querySelector('.brand'),document.querySelector('.mode'),document.querySelector('.nav'),document.querySelector('.panel')],buf:null};
+const GLASS=[[document.querySelector('.mode'),document.querySelector('.ui'),5],[document.querySelector('.nav'),document.querySelector('.ui'),5],[document.querySelector('.panel'),document.getElementById('about'),11]]   // last value: blur radius (CSS px);
 /* ---------- loop ---------- */
 const THETA0=0.63+TURN,par={x:0,y:0},focus={v:0};let t0=performance.now(),prev=t0,frames=0;
 function lerpAng(a,b,k){let d=((b-a+Math.PI)%(2*Math.PI)+2*Math.PI)%(2*Math.PI)-Math.PI;return a+d*k;}
@@ -715,6 +770,7 @@ function frameInner(now){const dt=Math.min((now-prev)/1000,0.05);prev=now;const 
      if(q>0){const tt=(-b-Math.sqrt(q))/a;if(tt>0&&r0[1]+rd[1]*tt>0.15){hit=true;break;}}}
    figHover=hit&&!ui.about&&(now-ptr.last<4000||ptr.down);cv.style.cursor=figHover?'pointer':'';
    figH+=((figHover?1:0)-figH)*(1-Math.exp(-dt*5));figF*=Math.exp(-dt*2.2);}
+   const figHA=Math.max(figH,focus.v);   // About keeps the hover glow: the sculpture comes closer and glows a little more
   // ideas surfacing: the outer head lifts first, the inner one follows it out with a soft overshoot
   for(let k=0;k<2;k++){const tg=figHover&&(k===0||lift[0]>REST[0]+(LIFT[0]-REST[0])*0.35)?LIFT[k]:REST[k];
     if(reduce){lift[k]+=(tg-lift[k])*(1-Math.exp(-dt*6));continue;}
@@ -766,7 +822,7 @@ function frameInner(now){const dt=Math.min((now-prev)/1000,0.05);prev=now;const 
   // glow softened: 15% less at rest (x0.85), gentler hover boost (0.45)
   function drawFig(S,clipY){gl.useProgram(P.fig.p);setU(P.fig.u,S);gl.uniform1f(P.fig.u.uClipY,clipY);gl.uniform3fv(P.fig.u.uExt,EXT);gl.uniform1f(P.fig.u.uS,FIG_S);gl.uniform1f(P.fig.u.uY,FIG_Y);
     const bob=k=>reduce?0:Math.sin(t*1.3+k*1.9)*0.025*Math.max(0,lift[k]/LIFT[k]);gl.uniform2f(P.fig.u.uLift,lift[0]+bob(0),lift[1]+bob(1));
-    gl.uniform1f(P.fig.u.uGlow,(glow*(1+0.45*figH)+figF*1.6)*0.85*(1-0.38*focus.v));gl.uniform1f(P.fig.u.uExpo,EXPO);
+    gl.uniform1f(P.fig.u.uGlow,(glow*(1+0.45*figHA)+figF*1.6)*0.85);gl.uniform1f(P.fig.u.uExpo,EXPO);
     gl.bindVertexArray(fVAO);gl.drawElements(gl.TRIANGLES,fd.i,gl.UNSIGNED_SHORT,0);}
   // ---- ocean reflection: the scene mirrored in the water plane (y = WATER_Y), clipped at the surface
   const WATER_Y=0.2;
@@ -779,7 +835,7 @@ function frameInner(now){const dt=Math.min((now-prev)/1000,0.05);prev=now;const 
     gl.bindTexture(gl.TEXTURE_2D,refl.t);gl.generateMipmap(gl.TEXTURE_2D);}   // mip levels = cheap defocus for the soft reflection
   // ---- scene
   gl.bindFramebuffer(gl.FRAMEBUFFER,msFB);gl.viewport(0,0,W,H);gl.clearColor(0,0,0,1);gl.clearStencil(0);gl.clear(gl.COLOR_BUFFER_BIT|gl.DEPTH_BUFFER_BIT|gl.STENCIL_BUFFER_BIT);
-  const LS={VP,eye,t,SUN,SC,SK,md,BL:BL*glow*(1+0.5*figH+figF*1.2),swarm,water:wat};const common=u=>setU(u,LS);
+  const LS={VP,eye,t,SUN,SC,SK,md,BL:BL*glow*(1+0.5*figHA+figF*1.2),swarm,water:wat};const common=u=>setU(u,LS);
   gl.disable(gl.DEPTH_TEST);gl.useProgram(P.sky.p);common(P.sky.u);gl.uniformMatrix4fv(P.sky.u.uInvVP,false,IVP);gl.uniform3fv(P.sky.u.uCel,wat?RISE_D:CEL);tx(P.sky.u.uPanoD,1,panoTex[0]);tx(P.sky.u.uPanoN,2,panoTex[1]);gl.uniform1f(P.sky.u.uPanoOn,bake.on?1:0);gl.uniform2f(P.sky.u.uPanoT,PT,PTV);gl.uniform3fv(P.sky.u.uPanoO,PANO_O);
   gl.bindVertexArray(emptyVAO);gl.drawArrays(gl.TRIANGLES,0,3);
   gl.enable(gl.DEPTH_TEST);gl.depthMask(true);
@@ -811,13 +867,21 @@ function frameInner(now){const dt=Math.min((now-prev)/1000,0.05);prev=now;const 
   // frosted copy of the scene for the glass
   fs(P.blur,frost[0],u=>{tx(u.uT,0,scene.t);gl.uniform2f(u.uDir,0,0);});
   for(let k=0;k<3;k++){fs(P.blur,frost[1],u=>{tx(u.uT,0,frost[0].t);gl.uniform2f(u.uDir,1.6/frost[0].w,0);});fs(P.blur,frost[0],u=>{tx(u.uT,0,frost[1].t);gl.uniform2f(u.uDir,0,1.6/frost[0].h);});}
+  if(UI_IDX===7&&hasF&&(frames%12===0)){const fw=frost[0].w,fh=frost[0].h;AUTO.buf=AUTO.buf&&AUTO.buf.length===fw*fh*4?AUTO.buf:new Float32Array(fw*fh*4);
+    gl.bindFramebuffer(gl.FRAMEBUFFER,frost[0].f);gl.readPixels(0,0,fw,fh,gl.RGBA,gl.FLOAT,AUTO.buf);gl.bindFramebuffer(gl.FRAMEBUFFER,null);
+    const tm=x=>{x*=EXPO;return Math.pow(Math.min(1,Math.max(0,(x*(2.51*x+0.03))/(x*(2.43*x+0.59)+0.14))),1/2.2);};
+    for(const el of AUTO.els){const r=el.getBoundingClientRect();if(r.width<2)continue;let s=0,n=0;
+      for(let yy=0;yy<6;yy++)for(let xx=0;xx<10;xx++){const px=Math.floor(((r.left+(xx+0.5)/10*r.width)-CR.left)/CR.width*fw),py=Math.floor((1-((r.top+(yy+0.5)/6*r.height)-CR.top)/CR.height)*fh);
+        if(px<0||py<0||px>=fw||py>=fh)continue;const i=(py*fw+px)*4;s+=tm(0.2126*AUTO.buf[i]+0.7152*AUTO.buf[i+1]+0.0722*AUTO.buf[i+2]);n++;}
+      if(!n)continue;const L=s/n,dark=el.dataset.ink==='1';if(!dark&&L>0.58)el.dataset.ink='1';else if(dark&&L<0.46)el.dataset.ink='0';
+      el.style.setProperty('--c',el.dataset.ink==='1'?'#111316':'#fff');}}
   // where the glass sits: measured from the live DOM each frame (follows CSS transitions)
-  const GR=new Float32Array(16),GP=new Float32Array(16);let gn=0;const sc=W/innerWidth,dark=document.body.classList.contains('night')?1:0;
-  for(const [el,par,tint] of GLASS){if(gn>=4)break;const op=parseFloat(getComputedStyle(par).opacity);if(op<0.01)continue;const r=el.getBoundingClientRect();if(r.width<2)continue;
-    GR.set([r.left*sc,H-r.bottom*sc,r.width*sc,r.height*sc],gn*4);GP.set([parseFloat(getComputedStyle(el).borderTopLeftRadius)*sc,op,dark,tint+(dark?0.12:0)],gn*4);gn++;}
+  const GR=new Float32Array(16),GP=new Float32Array(16);let gn=0;const sc=W/CR.width,dark=document.body.classList.contains('night')?1:0;
+  for(const [el,par,tint] of (UI_IDX===4||UI_IDX===6||UI_IDX===7?[]:UI_IDX===9?[...GLASS,[document.querySelector('.brand'),document.querySelector('.ui'),0]]:GLASS)){if(gn>=4)break;const op=parseFloat(getComputedStyle(par).opacity);if(op<0.01)continue;const r=el.getBoundingClientRect();if(r.width<2)continue;
+    GR.set([(r.left-CR.left)*sc,H-(r.bottom-CR.top)*sc,r.width*sc,r.height*sc],gn*4);GP.set([parseFloat(getComputedStyle(el).borderTopLeftRadius)*sc,op,dark,(el.classList.contains('panel')&&!dark)?-tint:tint],gn*4);gn++;}
   const fade=Math.min(1,(now-t0)/1600)*(0.08+0.92*trans.v*trans.v*(3-2*trans.v));
   fs(P.comp,null,u=>{tx(u.uS,0,scene.t);tx(u.uB0,1,bloom[0][0].t);tx(u.uB1,2,bloom[1][0].t);tx(u.uB2,3,bloom[2][0].t);tx(u.uB3,4,bloom[3][0].t);
-    gl.uniform1f(u.uTime,t);gl.uniform1f(u.uDim,ui.dim*0.25);gl.uniform1f(u.uFade,fade);gl.uniform1f(u.uExp,EXPO);gl.uniform2f(u.uRes,W,H);tx(u.uF,5,frost[0].t);gl.uniform1f(u.uDpr,sc);gl.uniform4fv(u.uGR,GR);gl.uniform4fv(u.uGP,GP);gl.uniform1i(u.uGN,gn);gl.uniform1i(u.uUI,UI_IDX);});
+    gl.uniform1f(u.uTime,t);gl.uniform1f(u.uDim,ui.dim*0.25);gl.uniform1f(u.uFade,fade);gl.uniform1f(u.uExp,EXPO);gl.uniform2f(u.uRes,W,H);tx(u.uF,5,frost[0].t);gl.uniform1f(u.uDpr,sc);gl.uniform4fv(u.uGR,GR);gl.uniform4fv(u.uGP,GP);gl.uniform1i(u.uGN,gn);gl.uniform1i(u.uUI,UI_IDX);gl.uniform1f(u.uStill,reduce?1:0);});
   if(++frames===2)document.body.classList.add('ready');
   requestAnimationFrame(frame);}
 requestAnimationFrame(frame);

@@ -1,0 +1,56 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Grain options</title>
+<style>
+  :root{--bg:#0d0f13;--ink:#f3f2ee;--mute:rgba(243,242,238,.62);--line:rgba(243,242,238,.14)}
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{background:var(--bg);color:var(--ink);font-family:"Helvetica Neue",Helvetica,Inter,Arial,sans-serif;-webkit-font-smoothing:antialiased;padding:24px 28px 32px}
+  header{display:flex;flex-wrap:wrap;align-items:baseline;justify-content:space-between;gap:16px;margin-bottom:20px}
+  h1{font-size:20px;font-weight:600;letter-spacing:-.02em} h1 span{font-weight:300;color:var(--mute)}
+  .ctrl{display:flex;gap:6px;flex-wrap:wrap}
+  .ctrl button{all:unset;cursor:pointer;font-size:13px;padding:8px 14px;border-radius:999px;border:1px solid var(--line);color:var(--ink)}
+  .ctrl button[aria-pressed="true"]{background:var(--ink);color:var(--bg)}
+  .ctrl button:focus-visible{outline:2px solid var(--ink);outline-offset:2px}
+  .grid{display:grid;grid-template-columns:repeat(3,1fr);gap:18px}
+  @media (max-width:1100px){.grid{grid-template-columns:1fr}}
+  figure{display:flex;flex-direction:column;gap:10px}
+  .frame{position:relative;aspect-ratio:16/10;border-radius:14px;overflow:hidden;border:1px solid var(--line);background:#000}
+  iframe{position:absolute;inset:0;width:100%;height:100%;border:0}
+  figcaption{display:flex;justify-content:space-between;gap:12px;font-size:13px;line-height:1.5}
+  figcaption b{font-weight:600} figcaption p{color:var(--mute);margin-top:2px;max-width:46ch}
+  figcaption a{color:var(--ink);white-space:nowrap;font-size:13px}
+  .note{color:var(--mute);font-size:13px;margin-top:18px;max-width:80ch;line-height:1.5}
+</style>
+</head>
+<body>
+<header>
+  <h1>Juangarcia<span>(mx)</span> — Grain options</h1>
+  <div class="ctrl" role="group" aria-label="Scene for all three">
+    <button data-h="day" aria-pressed="true">(Sun)</button><button data-h="night" aria-pressed="false">(Moon)</button><button data-h="ocean" aria-pressed="false">(Ocean)</button>
+    <button data-off aria-pressed="false">(Compare: current)</button>
+  </div>
+</header>
+<div class="grid">
+  <figure><div class="frame"><iframe data-g="film" title="Option A, 35 mm film"></iframe></div>
+    <figcaption><div><b>A · 35 mm film</b><p>Living grain that changes 24 times a second, clumpy rather than digital, strongest in the mid-tones with a hint of colour. Blacks lift slightly, like a film scan.</p></div><a data-open="film" href="#">Full screen ↗</a></figcaption></figure>
+  <figure><div class="frame"><iframe data-g="paper" title="Option B, cotton paper"></iframe></div>
+    <figcaption><div><b>B · Cotton paper</b><p>A still, tactile sheet: soft pulp clouds, fine fibres and tooth, lit from the top-left so it reads as relief. The scene feels printed, and the shadows go a touch warm.</p></div><a data-open="paper" href="#">Full screen ↗</a></figcaption></figure>
+  <figure><div class="frame"><iframe data-g="cine" title="Option C, cinema print"></iframe></div>
+    <figcaption><div><b>C · Cinema print</b><p>A full lens and projection look: a warm halation glow around the sculpture and the sun, a deeper vignette, a faint colour split in the corners, fine grain and a barely-there flicker.</p></div><a data-open="cine" href="#">Full screen ↗</a></figcaption></figure>
+</div>
+<p class="note">Texture is only on the 3D scene. Text, buttons and the glass stay clean. Grain is subtle in these small frames, so open each one full screen to judge it. With reduced motion, the grain holds still.</p>
+<script>
+  const frames=[...document.querySelectorAll('iframe')],modes=[...document.querySelectorAll('[data-h]')],offBtn=document.querySelector('[data-off]');
+  let mode='day',off=false;
+  const url=g=>`v2-grain-options.html${off?'':'?grain='+g}#${mode}`;
+  function load(){frames.forEach(f=>f.src=url(f.dataset.g));document.querySelectorAll('[data-open]').forEach(a=>a.href=url(a.dataset.open));
+    modes.forEach(b=>b.setAttribute('aria-pressed',b.dataset.h===mode));offBtn.setAttribute('aria-pressed',off);}
+  modes.forEach(b=>b.onclick=()=>{mode=b.dataset.h;load();});offBtn.onclick=()=>{off=!off;load();};
+  document.querySelectorAll('[data-open]').forEach(a=>a.target='_blank');
+  load();
+</script>
+</body>
+</html>
