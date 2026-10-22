@@ -645,7 +645,8 @@ const ITEMS=[
 ITEMS.forEach((it,i)=>{it.i=i;it.dp=0;it.dv=0;it.tgt=0;it.hv=0;it.c=[0,-50,0];it.on=false;});
 const CARDS=ITEMS.filter(it=>it.k!=='art'),BUBS=ITEMS.filter(it=>it.k==='art');
 // layout: the camera stands on a ring beside the sculpture and looks out; cards sit on a wider ring just above the grass
-const RC=4.6,RCARD=RC+6.2,PILE_D=9.5,PHI0=0.63-Math.PI/2,ANG=0.43,CARD=[1.8,1.12],DROP_H=11;   // ring radii (m), first heading, angle per card slot, card half size (m), drop height (m)
+const TALL=innerWidth/innerHeight<0.8;   // portrait screens: cards and the pile sit further out so one card fits the width
+const RC=4.6,RCARD=RC+(TALL?9.6:6.2),PILE_D=TALL?14.5:9.5,PHI0=0.63-Math.PI/2,ANG=0.43,CARD=[1.8,1.12],DROP_H=11;   // ring radii (m), first heading, angle per card slot, card half size (m), drop height (m)
 const slotPhi=u=>PHI0-u*ANG;   // decreasing angle = the camera turns right, so passed cards slide out to the left
 // ground height, same formula as the shaders (so cards and bubbles sit on the grass)
 const frc=x=>x-Math.floor(x),hsh=(x,y)=>frc(Math.sin(x*127.1+y*311.7)*43758.5453);
