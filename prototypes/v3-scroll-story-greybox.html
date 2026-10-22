@@ -118,7 +118,7 @@
   #crawl{position:fixed;inset:0;pointer-events:none;overflow:hidden;visibility:hidden;perspective:760px;perspective-origin:var(--x,50%) var(--y,60%);
     -webkit-mask-image:linear-gradient(to top,transparent var(--b,40%),#000 calc(var(--b,40%) + 80px),#000 70%,transparent 93%);mask-image:linear-gradient(to top,transparent var(--b,40%),#000 calc(var(--b,40%) + 80px),#000 70%,transparent 93%)}
   #crawl .plane{position:absolute;inset:0;transform-origin:var(--x,50%) var(--y,60%);transform:rotateX(var(--tilt,22deg))}
-  #crawl .txt{position:absolute;left:var(--x,50%);top:0;width:min(620px,86vw);text-align:center;text-shadow:0 1px 14px rgba(0,0,0,.35);will-change:transform}
+  #crawl .txt{position:absolute;left:var(--x,50%);top:0;width:min(620px,86vw);text-align:center;text-shadow:0 1px 3px rgba(0,20,50,.45),0 2px 26px rgba(0,20,50,.6);will-change:transform}
   #crawl .lbl{font-size:14px;color:var(--mute);margin-bottom:18px}
   #crawl h2{font-size:clamp(28px,3.4vw,42px);font-weight:500;letter-spacing:-.02em;line-height:1.12;margin-bottom:24px}
   #crawl p{font-size:clamp(17px,1.55vw,20px);line-height:1.55;margin-bottom:18px;color:rgba(255,255,255,.94)}
@@ -645,7 +645,7 @@ const ITEMS=[
 ITEMS.forEach((it,i)=>{it.i=i;it.dp=0;it.dv=0;it.tgt=0;it.hv=0;it.c=[0,-50,0];it.on=false;});
 const CARDS=ITEMS.filter(it=>it.k!=='art'),BUBS=ITEMS.filter(it=>it.k==='art');
 // layout: the camera stands on a ring beside the sculpture and looks out; cards sit on a wider ring just above the grass
-const RC=4.6,RCARD=RC+6.2,PILE_D=7.5,PHI0=0.63-Math.PI/2,ANG=0.43,CARD=[1.8,1.12],DROP_H=11;   // ring radii (m), first heading, angle per card slot, card half size (m), drop height (m)
+const RC=4.6,RCARD=RC+6.2,PILE_D=9.5,PHI0=0.63-Math.PI/2,ANG=0.43,CARD=[1.8,1.12],DROP_H=11;   // ring radii (m), first heading, angle per card slot, card half size (m), drop height (m)
 const slotPhi=u=>PHI0-u*ANG;   // decreasing angle = the camera turns right, so passed cards slide out to the left
 // ground height, same formula as the shaders (so cards and bubbles sit on the grass)
 const frc=x=>x-Math.floor(x),hsh=(x,y)=>frc(Math.sin(x*127.1+y*311.7)*43758.5453);
@@ -717,7 +717,7 @@ function simBubbles(N,seedv){let sd=seedv;const R=()=>(sd=(sd*16807)%2147483647)
       if(B.sleep&&!A.sleep)A.contact=true;if(A.sleep&&!B.sleep)B.contact=true;}
     for(const o of b){if(o.sleep||s*DT<o.go)continue;const sp=Math.hypot(...o.v);const low=o.p[1]<o.r+0.02||o.contact;o.contact=false;
       o.still=sp<0.35&&s*DT>o.go+0.5?o.still+DT:0;if(o.still>0.2&&(low||o.p[1]<o.r*4)){o.sleep=true;o.v=[0,0,0];}}}
-  return {frames,N,dt:DT*REC,r:b.map(o=>o.r)};}
+  return {frames,N,dt:DT*REC,r:b.map(o=>o.r),go:b.map(o=>o.go)};}
 const ART=(()=>{const a=simBubbles(BUBS.length,7);a.dur=(a.frames.length-1)*a.dt;return a;})();   // seed 7 settles into the 5 / 2 / 1 stack
 let artT=0;const PL=new Float32Array(18*4),PLZ=new Float32Array(18*4);let PLN=0;
 
@@ -962,7 +962,7 @@ function frameInner(now){const dt=Math.min((now-prev)/1000,0.05);prev=now;const 
   {const fi=Math.min(ART.frames.length-1.001,artT/ART.dt),i0=Math.floor(fi),fr=fi-i0,F0=ART.frames[i0],F1=ART.frames[i0+1];
    for(const b of BUBS){const k=b.b*3,lx=F0[k]+(F1[k]-F0[k])*fr,ly=F0[k+1]+(F1[k+1]-F0[k+1])*fr,lz=F0[k+2]+(F1[k+2]-F0[k+2])*fr,r=ART.r[b.b];
      const y=wat?0.2+ly-r*0.55+Math.sin(t*0.9+b.b*1.7)*0.06:pc[1]+ly;   // ocean: the pile floats, half sunk (grey-box guess)
-     b.c=[pc[0]+pr[0]*lx-pf[0]*lz,y,pc[2]+pr[2]*lx-pf[2]*lz];b.r=r;b.on=artT>0;
+     b.c=[pc[0]+pr[0]*lx-pf[0]*lz,y,pc[2]+pr[2]*lx-pf[2]*lz];b.r=r;b.on=artT>ART.go[b.b];   // hidden until its release, so none hang in the sky
      if(canPick&&b.on){const o=[r0[0]-b.c[0],r0[1]-b.c[1],r0[2]-b.c[2]],bb=o[0]*rd[0]+o[1]*rd[1]+o[2]*rd[2],cc=o[0]*o[0]+o[1]*o[1]+o[2]*o[2]-r*r,dd=bb*bb-cc;
        if(dd>0){const q=-bb-Math.sqrt(dd);if(q>0&&q<pickT){pick=b.i;pickT=q;}}}
      if(b.on&&PLN<18){PL.set([b.c[0],b.c[1],b.c[2],0.5*(1+0.7*b.hv)],PLN*4);PLN++;}}}
@@ -976,10 +976,10 @@ function frameInner(now){const dt=Math.min((now-prev)/1000,0.05);prev=now;const 
   const focal=CR.height*0.5/Math.tan(fov*0.5);
   const placeT=(el,p,hM,op)=>{const q=op>0.01&&proj(p);if(!q||q[0]<-CR.width||q[0]>CR.width*2){el.style.visibility='hidden';return;}
     el.style.visibility='visible';el.style.opacity=Math.min(1,op).toFixed(3);el.style.transform=`translate(${q[0].toFixed(1)}px,${(q[1]-108).toFixed(1)}px) scale(${(hM*focal/q[2]/86).toFixed(4)})`;};
-  const topLeft=it=>{const tv=[Math.cos(it.a),0,-Math.sin(it.a)];return [it.rest[0]+tv[0]*CARD[0],it.rest[1]+CARD[1]+0.3,it.rest[2]+tv[2]*CARD[0]];};
+  const topLeft=it=>{const tv=[Math.cos(it.a),0,-Math.sin(it.a)];return [it.rest[0]+tv[0]*CARD[0],it.rest[1]+CARD[1]+0.12,it.rest[2]+tv[2]*CARD[0]];};
   const cLab=CARDS[0],cWork=CARDS.find(c=>c.k==='work'),cMid=CARDS.find(c=>c.slot===7);
-  placeT(tLab,topLeft(cLab),1.15,cLab.dp*(s<TL.art?1:0));placeT(tWork,topLeft(cWork),1.15,cWork.dp*(s<TL.art?1:0));
-  placeT(tArt,[pc[0]-pr[0]*3.6,pc[1]+4.3,pc[2]-pr[2]*3.6],1.15,Math.min(1,artT/1.2));
+  placeT(tLab,topLeft(cLab),0.72,cLab.dp*(s<TL.art?1:0));placeT(tWork,topLeft(cWork),0.72,cWork.dp*(s<TL.art?1:0));
+  placeT(tArt,[pc[0]-pr[0]*3.4,pc[1]+3.3,pc[2]-pr[2]*3.4],0.72,Math.min(1,artT/1.2));
   {const q=cMid.dp>0.5&&proj([cMid.rest[0]-Math.sin(cMid.a)*0.6,gY(cMid.rest[0],cMid.rest[2])+0.15,cMid.rest[2]-Math.cos(cMid.a)*0.6]);
    if(q&&s<TL.art){seeMore.style.visibility='visible';seeMore.tabIndex=0;seeMore.style.opacity=Math.min(1,(cMid.dp-0.5)*2);seeMore.style.transform=`translate(${(q[0]-seeMore.offsetWidth/2).toFixed(1)}px,${q[1].toFixed(1)}px)`;}
    else{seeMore.style.visibility='hidden';seeMore.tabIndex=-1;}}
