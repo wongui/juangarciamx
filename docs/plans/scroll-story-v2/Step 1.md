@@ -1,7 +1,7 @@
 # Step 1: Decisions and content from Juan
 
 ## Decisions
-- [ ] About camera: keep today’s side profile, or face the open skull from slightly below like sketch 2? (Recommended: the skull view, so the text can come out of the top.)
+- [x] About camera: keep today’s side profile, or face the open skull from slightly below like sketch 2? **Decided 2026-10-22: side profile, close on the top of the head (three near layers), flat left-aligned text scrolling up out of the smallest head (no tilt).**
 - [ ] Is the “Open mind” chapter folded into About, with the heads lifting as the text rises? (Recommended: yes.)
 - [ ] Title style for LAB / WORK / ART: chunky outlined HTML type like the sketch, or 3D letters with the same glow? (Recommended: HTML first, 3D letters as a later upgrade.)
 - [ ] What does clicking a card or bubble do while there are no project pages yet? (Recommended: a glass preview overlay with an image, one line and a link, if one exists.)

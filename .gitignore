@@ -3,3 +3,7 @@
 node_modules/
 .next/
 .env*
+
+# kept local: pulled from juangarcia.mx (includes NDA project media), and fonts not licensed for redistribution
+assets/source/juangarcia-mx-framer/
+assets/source/fonts/
