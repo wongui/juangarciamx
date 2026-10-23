@@ -11,7 +11,7 @@ W, H = 1024, 640
 COVERS = {
     'aido':            'B9Dwwm3bQhOVyvWTyll6FiZCAzc.png',
     'jiviniti':        'NF0yU2zrySYLo2claBogfHjhC6s.png',
-    'womenhealth':     'FtATuE5amrdfAAMzru7d0gcUE.png',
+    'around':          'z0XmwYl7d80Ii6W4UER9uNUZ3M.png',
     'chiefchallenges': 'dJFrCFjRd4FfmXCie2dVVdEXoCY.png',
     'coltrane':        'LXtTSmQKTMV6coQuMUpLJGlphIk.png',
     'nocturna':        'Q89pv1sBlG3TrXh9Pz93IeOn4zM.png',
@@ -27,6 +27,7 @@ COVERS = {
     'config2026':      ('assets/source/lab/config2026/og-image.png', 'left'),   # the logo sits on the left edge: keep it
     # Work: share images of live sites
     'atelierwest':     'assets/source/work/atelierwest/cover.png',   # supplied by Juan (wider margins than the share image, so a centre crop keeps the wordmark)
+    'embroker':        'assets/source/work/embroker/cover.png',      # supplied by Juan
 }
 def find(name):
     if os.path.exists(os.path.join(ROOT, name)): return os.path.join(ROOT, name)   # a path from the repo root

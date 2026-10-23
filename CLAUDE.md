@@ -16,6 +16,7 @@ Keep my parenthetical voice ("(Lab) (Work) (Art) (About)", "(Move) (Drag)", "(& 
 - **Work / Art (secondary):** case studies and Brutalist Daddy 3D work, one click away.
 
 ## Landing (decided, prototype: `prototypes/v2-sun-moon-field.html`)
+**Current main file: `index.html` (repo root) is the v3 scroll story and the home page. Edit it there; `prototypes/v3-scroll-story-greybox.html` only forwards to it. Keep backups in `prototypes/` as `v3-scroll-story-greybox-alt-*.html`.**
 Giant glowing sculpture buried to the chest in a dense grass field with rolling grass hills.
 (Sun) = vibrant blue sky, sun, dragonflies. (Moon) = after-sunset blue hour, crescent moon, fireflies.
 Read `docs/decisions.md` before changing the look. It records what was tried and rejected.

@@ -12,7 +12,7 @@
 ## Content
 - [ ] About copy, 4 or 5 short lines (starting point: the draft in the brief)
 - [ ] Lab list: 3 to 5 entries. Idea: this site’s own experiments (the WebGL clear glass, the cinema grain, the open-mind sculpture, the grass footprint) are real Lab entries already
-- [ ] Work list: 4 to 6 projects (brief shortlist: AIDO, Jiviniti, Women’s Health, frog, Coltrane), plus any work from 2025 or 2026
+- [ ] Work list: 4 to 6 projects (brief shortlist: AIDO, Jiviniti, Around, frog, Coltrane), plus any work from 2025 or 2026
 - [ ] Art list: 5 to 8 Brutalist Daddy pieces (Nocturna, Sūraja, Surreal Elfs, Rhythmic Music Conservatory, Pali)
 - [ ] For every entry: title, one line, year, one landscape hero image (16:10, 2000 px or larger), link if there is one
 - [ ] Footer copy: email, LinkedIn, Instagram (pick one handle), a coffee or scheduling link, copyright line

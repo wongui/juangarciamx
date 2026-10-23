@@ -675,7 +675,7 @@ gl.bindVertexArray(null);
 // placeholder content: titles from the brief where we have them, [placeholders] elsewhere; the images are generated stand-ins
 const ITEMS=[
   ...['Clear glass UI','Cinema print grain','Open mind sculpture','Grass footprint'].map((t,i)=>({k:'lab',t,slot:i})),
-  ...['AIDO','Jiviniti',"Women's Health",'frog: Chief Challenges','Coltrane'].map((t,i)=>({k:'work',t,slot:5+i})),
+  ...['AIDO','Jiviniti','Around','frog: Chief Challenges','Coltrane'].map((t,i)=>({k:'work',t,slot:5+i})),
   ...['Nocturna','Sūraja','Surreal Elfs','Rhythmic Music Conservatory','Pali','[Art 6]','[Art 7]','[Art 8]'].map((t,i)=>({k:'art',t,b:i}))];
 ITEMS.forEach((it,i)=>{it.i=i;it.dp=0;it.dv=0;it.tgt=0;it.hv=0;it.c=[0,-50,0];it.on=false;});
 const CARDS=ITEMS.filter(it=>it.k!=='art'),BUBS=ITEMS.filter(it=>it.k==='art');
