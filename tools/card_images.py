@@ -25,6 +25,8 @@ COVERS = {
     # Lab: the share (og) images of the live experiments
     'learn2fly':       'assets/source/lab/learn2fly/og-image.png',
     'config2026':      ('assets/source/lab/config2026/og-image.png', 'left'),   # the logo sits on the left edge: keep it
+    # Work: share images of live sites
+    'atelierwest':     'assets/source/work/atelierwest/cover.png',   # supplied by Juan (wider margins than the share image, so a centre crop keeps the wordmark)
 }
 def find(name):
     if os.path.exists(os.path.join(ROOT, name)): return os.path.join(ROOT, name)   # a path from the repo root
@@ -37,8 +39,12 @@ with tempfile.TemporaryDirectory() as tmp:
     for key, name in COVERS.items():
         name, anchor = name if isinstance(name, tuple) else (name, 'centre')
         jpg = os.path.join(tmp, key + '.jpg')
-        subprocess.run(['ffmpeg', '-loglevel', 'error', '-y', '-i', find(name), '-vf',
-                        f'scale={W}:{H}:force_original_aspect_ratio=increase:flags=lanczos,crop={W}:{H}' + (':0:(ih-oh)/2' if anchor == 'left' else ''),
+        if anchor == 'fit':
+            sw, sh = map(int, subprocess.run(['ffprobe', '-v', 'error', '-select_streams', 'v:0', '-show_entries', 'stream=width,height', '-of', 'csv=p=0', find(name)], capture_output=True, text=True, check=True).stdout.strip().split(','))
+            ih = round(W * sh / sw / 2) * 2; band = (H - ih) // 2
+        vf = (f'scale={W}:{ih}:flags=lanczos,pad={W}:{H}:0:{band},fillborders=top={band}:bottom={H - ih - band}:mode=smear' if anchor == 'fit' else
+              f'scale={W}:{H}:force_original_aspect_ratio=increase:flags=lanczos,crop={W}:{H}' + (':0:(ih-oh)/2' if anchor == 'left' else ''))
+        subprocess.run(['ffmpeg', '-loglevel', 'error', '-y', '-i', find(name), '-vf', vf,
                         '-q:v', '3', jpg], check=True)
         out[key] = 'data:image/jpeg;base64,' + base64.b64encode(open(jpg, 'rb').read()).decode()
         open(os.path.join(ROOT, 'assets/data', 'card-' + key + '.jpg'), 'wb').write(open(jpg, 'rb').read())   # preview copy
