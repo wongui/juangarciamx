@@ -38,7 +38,7 @@ Status key: ✅ written · 🟡 old site copy, word for word · ⬜ missing
 - **Facts:** 2026 · Design · Claude Code, Vibe Coding, Web Design · Solo, from design to launch · config-2026-frog.vercel.app · (Links) LinkedIn post
 - **Known:** a 19-screen scrolling recap for the frog team: Figma's big idea and six launches (Motion, Generative plugins, Weave tools, Figma agent, Shader fills, Code on the canvas), each with "In practice". Repo created July 2026. Source for the text: Juan, plus his LinkedIn post about it.
 - Overview ✅ · The goal ✅ · Approach ✅ · Outcome ✅
-- Media: cover = share image. Screen recording ⬜, screenshots for the gallery ⬜
+- Media: main video = Juan's screen recording of the whole site (assets/source/lab/config2026/screen-recording.mov, git-ignored; web copy 1920 px, 60 fps, 6 MB). Screenshots for the gallery ⬜
 
 **Headline:** A conference recap, built as a website
 
@@ -73,7 +73,7 @@ Status key: ✅ written · 🟡 old site copy, word for word · ⬜ missing
 - **Facts:** 2024 (June to August) · Insurtech, Commercial Insurance · UX/UI Design, Visual Design, Art Direction, Prototyping, Design Systems, Web Design · Senior Visual Designer · frog client project · embroker.com
 - **Source:** Juan, and his frog case-study deck ("A Best-in-Class Insurance Buying Experience for Small Businesses"). Slides with text or confidential footers stay off the site; only clean visuals and the image halves of two slides are used.
 - Overview ✅ · The goal ✅ · Approach ✅ · Outcome ✅
-- Media: cover supplied by Juan. Gallery ✅ (6, in assets/source/work/embroker). Video ⬜
+- Media: cover = the law-firm page composition (law-firm-page.png, supplied by Juan; replaced his collage cover.png). Gallery ✅ (6, in assets/source/work/embroker). Video ⬜
 
 **Headline:** A best-in-class insurance buying experience for small businesses
 
@@ -89,6 +89,23 @@ Status key: ✅ written · 🟡 old site copy, word for word · ⬜ missing
 - **Facts:** 2024 · Design · Web Design · Visual Designer, UX/UI · aido.studio
 - Overview 🟡 · The goal ⬜ · Approach ⬜ · Outcome ⬜
 - Media: video ✅, gallery ✅ (4)
+
+### Hule
+- **Moved from Art to Work (Oct 2026).** Hule Galería, Atlampa, CDMX: gallery, patio, showroom of artisanal finishes, coffee bar.
+- **Facts:** 2024 (brand still in use) · Art, Culture & Design, Gallery · Branding, 3D Art, Animation · Brand Designer, 3D Artist, Design Director · hulegaleria.com · Instagram @hulegaleria
+- **Known from the site and Instagram:** 12 exhibitions listed (among them Juan's "mutar para sobrevivir" and Lu'um's "mosaico etl"); a patio rented for shoots, workshops and events; a shop with Juan's pieces among other artists'; 3,765 Instagram followers (Oct 2026). Address on the site: Ciprés 344, Atlampa; the posters say Atlampa #402.
+- Overview ✅ · The goal ✅ · Approach ✅ · Outcome ✅
+- Media: card and main video = Juan's logo motion (assets/source/work/hule/logo-motion.mp4). Gallery: the two branding videos side by side (launch, branding), the brand board, four posters in a 2 x 2 grid (all supplied by Juan, in assets/source/work/hule)
+
+**Headline:** As light as rubber, as heavy as metal
+
+**Overview:** Hule Galería is a multidisciplinary, collaborative space for art, design and culture in Atlampa, Mexico City: a gallery, a patio, a showroom of artisanal finishes and a specialty coffee bar. I created its brand in 2024 as brand designer, 3D artist and design director, for the artists, local creatives and people of Mexico City who come through it.
+
+**(The goal):** The gallery already had its name, so the brand started from it. “Hule” means rubber in Spanish, and plastic too, and the logo plays on both: an inflatable wordmark that can also read as metal, a game between a very light material and a very heavy one. The brand had to hold a space that is many things at once, exhibitions, workshops, shoots and a coffee bar, and speak to artists, local creatives and the city around it.
+
+**(Approach):** I built the identity around a wordmark that moves between 2D and 3D, to portray the diversity of the project: flat and cream with a bold outline, or inflated in chrome, lime and white. Around it, a very colorful palette and a family of soft 3D shapes carry the variation, playfulness and uniqueness of the space across posters, workshops, events and motion.
+
+**(Outcome):** The client was very happy with the result. The gallery is running with multiple exhibitions, and the brand, still in use, has become part of the project itself. I’m very proud of this one: it brings my 3D and brand skills together in a bold, playful approach to a brand.
 
 ### Jiviniti
 - **Facts:** 2024 · Nonprofit, Research · Web Design · Visual Designer, UX/UI · jiviniti.org
@@ -106,20 +123,19 @@ Status key: ✅ written · 🟡 old site copy, word for word · ⬜ missing
 - Media: video ✅, gallery ✅ (6)
 
 ### Coltrane
-- **Facts:** 2021 · NDA. Shows the old site's line: "Please contact me to see NDA protected projects…"
-- ⬜ Public page or not? If yes: facts, text, which images are safe to show, can "Coppel" appear
+- **Public case study since Oct 2026** (Juan's decision; it was behind an NDA on juangarcia.mx).
+- **Facts:** 2021 · [Industry] ⬜ · [Capabilities] ⬜ · [My role] ⬜ · client: Coppel (on the old Full Work page; OK to name? ⬜)
+- **Known from the images and video:** "Coltrane Design Language System" (logo, type, Amarillo 300 / Azul 300, patterns, buttons, icons), the line "Unificar los esfuerzos", the intranetCoppel employee portal (Hola Ana, favourite apps, pending requests, profile, news, Universidad Coppel) on desktop and phones, and an in-store payment flow on tablets (Abono: payment method, account and transaction details).
+- Overview ⬜ · The goal ⬜ · Approach ⬜ · Outcome ⬜
+- Media: video ✅ (Vimeo 920144108), gallery ✅ (3, in assets/source/work/coltrane)
+
 
 ## Art
-
-### Hule
-- **Facts:** [Year] ⬜ · Galería · Branding, 3D Art, Animation · [My role] ⬜ · Instagram @hulegaleria
-- Overview 🟡 (Spanish) · The goal ⬜ · Approach ⬜ · Outcome ⬜
-- Media: video ✅ (a second one exists), gallery ✅ (6)
 
 ### Luum
 - **Facts:** 2023 · Tiles · 3D animation · [My role] ⬜
 - Overview 🟡 · The goal ⬜ · Approach ⬜ · Outcome ⬜
-- Media: video ✅, gallery ✅ (4)
+- Media: video ✅, gallery ✅ (5: the render, then a row of four photos; booklets-hand supplied by Juan, in assets/source/art/luum)
 
 ### Nocturna
 - **Facts:** 2023 · Music · 3D Animation · [My role] ⬜

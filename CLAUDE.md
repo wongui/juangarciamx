@@ -11,7 +11,7 @@ Visual craft is the loudest signal; 3D is my signature; vibe coding is the metho
 Keep my parenthetical voice ("(Lab) (Work) (Art) (About)", "(Move) (Drag)", "(& get a coffee)").
 
 ## Site structure
-- **Landing:** the Sun & Moon field (see below). Text nav to Lab, Work, Art. About opens as an overlay on the live scene.
+- **Landing:** the Sun & Moon field (see below). Desktop text nav: (About) (Work) (Let's talk), plus a dot rail for the story's sections. About is its own page (`about.html`).
 - **Lab (primary):** usable interaction experiments, each with a short "why" and "how I built it".
 - **Work / Art (secondary):** case studies and Brutalist Daddy 3D work, one click away.
 

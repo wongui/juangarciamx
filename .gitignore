@@ -7,3 +7,6 @@ node_modules/
 # kept local: pulled from juangarcia.mx (includes NDA project media), and fonts not licensed for redistribution
 assets/source/juangarcia-mx-framer/
 assets/source/fonts/
+
+# screen recordings Juan supplies: over GitHub's 100 MB limit; tools/card_videos.sh makes the web copies in assets/data
+assets/source/**/*.mov

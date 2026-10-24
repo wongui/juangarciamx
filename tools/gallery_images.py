@@ -2,8 +2,8 @@
 # The pages' galleries (PAGE[slug].gal in index.html) use images from juangarcia.mx, kept in assets/source/juangarcia-mx-framer,
 # which is git-ignored (it holds NDA media), so the site can't load them from there online. This writes a web copy of each one:
 # assets/data/gallery/<slug>/<same name>.jpg, at most 2000 px on the long edge, flattened on white.
-# Keep GALLERY in step with the gal entries in index.html. Coltrane is left out: its page on juangarcia.mx is behind an NDA.
-# Images Juan supplies for projects without an old page live in assets/source/work/<slug> or assets/source/lab/<slug>.
+# Keep GALLERY in step with the gal entries in index.html.
+# Images Juan supplies live in assets/source/work/<slug>, lab/<slug> or art/<slug>.
 # usage: python3 tools/gallery_images.py
 import os
 from PIL import Image
@@ -19,9 +19,8 @@ GALLERY = {
                         'RBx50eSy8Nhkjs8FheD5bMc03o', 'mp1xgkWRRxLGAgm8ouRfwC4Dlw', 'red3buiCNiT0cnhhHoU6UP7nJg0', 'z0XmwYl7d80Ii6W4UER9uNUZ3M'],
     'chiefchallenges': ['W2p3OtPCtZir49JEneaCNIt5H44', 'Ogx0C5ufvhUS5dpapZLlPXLrc', 'oLbZEzAYZ1fDl8sJyXJVKcgURbc', 'dJFrCFjRd4FfmXCie2dVVdEXoCY',
                         'IWSJSvabtSqAtoZOIeCUo16FPEw', 'jkT1rpJSLAfH6yBLHcCMl6MrGw'],
-    'hule':            ['gpyIuovAyqj1WhMemSUhGGMY5S4', 'wmfFUI4TuUY4bxV6W5BAbg8U', 'XWRlbHbJH8vA604MtCjRnLcbJs', 'mCuu4jX4TY3EvgnUHxdW9M7Akw',
-                        'myirq2AlGlRJeD4wkLFqDHSu8', 'kPbErLuZPSM7egXhQ4Ct8z42wBw'],
-    'luum':            ['KENgZqF7DAIygHWG95F0pXtlYw', '8N9xPa7Keq7j6QZqkpZid3LCnNs', 'VafjmCf8qtENL8Qx5mCYev511g', 'gnVu6qkYY0ujrdajmFfjHbRRZ38'],
+    'hule':            ['brand-board', 'poster-about', 'poster-shapes', 'poster-words', 'poster-workshop'],   # supplied by Juan (assets/source/art/hule)
+    'luum':            ['KENgZqF7DAIygHWG95F0pXtlYw', 'booklets-hand', '8N9xPa7Keq7j6QZqkpZid3LCnNs', 'VafjmCf8qtENL8Qx5mCYev511g', 'gnVu6qkYY0ujrdajmFfjHbRRZ38'],
     'nocturna':        ['NVzEnwngZ9Q1O4tTv3JBTdzU24', 'OyYcVa1cOhAd6QjzeaQyK1maZc', 'Q89pv1sBlG3TrXh9Pz93IeOn4zM'],
     'suraja':          ['p0dEAYKK3h6XUistEUOzcM42CsU', 'bcTBNmAEbwfNxy4xQl46plNiifE', 'cjEXv9fDllha03TvO8PhmIFX6vg'],
     'surrealelfs':     ['AIPIpusja0IJPYytZtbKOfPqY', 'LTaWnGWcqTUw43WmiDcUre1iQ', 'aQtaYlf5m4vPwZvSboLn0PM1Qs', 'YMbS5FDeLHy2ljpioRiqWmpbn7k',
@@ -30,16 +29,17 @@ GALLERY = {
     'genesis':         ['zh2iOPNAlckYQ59vrpUB5bt9yA', 'Geh1MY62D8oqbahELqhrnE9TLDw', 'vh7YQsuL8iKINmNk2ABxETiUniE'],
     'trascender':      ['F8wrDvW11MsMljyiNikXFik', 'QVBJKNcb64TeE1ZuBcUWdeHcdhc', 'iJiQcsyvC9T0jrQVCqwGfjyIk'],
     'learn2fly':       ['kid-playing'],   # supplied by Juan (assets/source/lab/learn2fly)
+    'coltrane':        ['dls-board', 'intranet-screens', 'payment-tablets'],   # supplied by Juan (assets/source/work/coltrane); public since Oct 2026, it was NDA on juangarcia.mx
     'embroker':        ['photo-laptop', 'directions', 'visual-system', 'devices', 'law-firms', 'values-laptop'],   # supplied by Juan (assets/source/work/embroker); directions and law-firms are the image halves of his deck slides
     'atelierwest':     ['brand-board', 'poster-applications-1', 'poster-applications-2'],   # supplied by Juan (assets/source/work/atelierwest)
 }
 for slug, names in GALLERY.items():
     os.makedirs(os.path.join(OUT, slug), exist_ok=True)
-    media = next(d for d in (os.path.join(SRC, slug, 'media'), *(os.path.join(ROOT, 'assets/source', k, slug) for k in ('work', 'lab')))   # old-site folder, or images Juan supplied
-                 if os.path.isdir(d))
+    dirs = [d for d in (os.path.join(SRC, slug, 'media'), *(os.path.join(ROOT, 'assets/source', k, slug) for k in ('work', 'lab', 'art')))   # old-site folder, or images Juan supplied
+            if os.path.isdir(d)]
     for n in names:
-        f = next(x for x in os.listdir(media) if os.path.splitext(x)[0] == n)
-        im = Image.open(os.path.join(media, f)).convert('RGBA')
+        f = next(os.path.join(d, x) for d in dirs for x in os.listdir(d) if os.path.splitext(x)[0] == n)
+        im = Image.open(f).convert('RGBA')
         bg = Image.new('RGB', im.size, 'white'); bg.paste(im, mask=im.getchannel('A')); im = bg
         k = MAXE / max(im.size)
         if k < 1: im = im.resize((round(im.width * k), round(im.height * k)), Image.LANCZOS)
