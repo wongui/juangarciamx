@@ -3,6 +3,7 @@
 # which is git-ignored (it holds NDA media), so the site can't load them from there online. This writes a web copy of each one:
 # assets/data/gallery/<slug>/<same name>.jpg, at most 2000 px on the long edge, flattened on white.
 # Keep GALLERY in step with the gal entries in index.html. Coltrane is left out: its page on juangarcia.mx is behind an NDA.
+# Images Juan supplies for projects without an old page live in assets/source/work/<slug> or assets/source/lab/<slug>.
 # usage: python3 tools/gallery_images.py
 import os
 from PIL import Image
@@ -22,16 +23,20 @@ GALLERY = {
                         'myirq2AlGlRJeD4wkLFqDHSu8', 'kPbErLuZPSM7egXhQ4Ct8z42wBw'],
     'luum':            ['KENgZqF7DAIygHWG95F0pXtlYw', '8N9xPa7Keq7j6QZqkpZid3LCnNs', 'VafjmCf8qtENL8Qx5mCYev511g', 'gnVu6qkYY0ujrdajmFfjHbRRZ38'],
     'nocturna':        ['NVzEnwngZ9Q1O4tTv3JBTdzU24', 'OyYcVa1cOhAd6QjzeaQyK1maZc', 'Q89pv1sBlG3TrXh9Pz93IeOn4zM'],
-    'suraja':          ['p0dEAYKK3h6XUistEUOzcM42CsU', 'aSTxMkhr3E5ci3U3uMycznQozr4', 'bcTBNmAEbwfNxy4xQl46plNiifE', 'cjEXv9fDllha03TvO8PhmIFX6vg'],
+    'suraja':          ['p0dEAYKK3h6XUistEUOzcM42CsU', 'bcTBNmAEbwfNxy4xQl46plNiifE', 'cjEXv9fDllha03TvO8PhmIFX6vg'],
     'surrealelfs':     ['AIPIpusja0IJPYytZtbKOfPqY', 'LTaWnGWcqTUw43WmiDcUre1iQ', 'aQtaYlf5m4vPwZvSboLn0PM1Qs', 'YMbS5FDeLHy2ljpioRiqWmpbn7k',
                         'IvQSrtgz2nRFIO6XiOxU41QS5ns', 'vfZH27nLOViwqGFu9rekXhXmww', 'jLAR4aRoHR07eqiFs5DDUeU0i44', 'mEvTuYGxxAwendvLsEZlshvsBSI'],
     'rmc':             ['XFA9Ng18HCQzwugu8GvVXWIMMs', 'Q3eQ855Ov2jXXtILfFdtfoq2U', 'jtfxoFylXqHVrGOIp3DdhV47Y'],
     'genesis':         ['zh2iOPNAlckYQ59vrpUB5bt9yA', 'Geh1MY62D8oqbahELqhrnE9TLDw', 'vh7YQsuL8iKINmNk2ABxETiUniE'],
     'trascender':      ['F8wrDvW11MsMljyiNikXFik', 'QVBJKNcb64TeE1ZuBcUWdeHcdhc', 'iJiQcsyvC9T0jrQVCqwGfjyIk'],
+    'learn2fly':       ['kid-playing'],   # supplied by Juan (assets/source/lab/learn2fly)
+    'embroker':        ['photo-laptop', 'directions', 'visual-system', 'devices', 'law-firms', 'values-laptop'],   # supplied by Juan (assets/source/work/embroker); directions and law-firms are the image halves of his deck slides
+    'atelierwest':     ['brand-board', 'poster-applications-1', 'poster-applications-2'],   # supplied by Juan (assets/source/work/atelierwest)
 }
 for slug, names in GALLERY.items():
     os.makedirs(os.path.join(OUT, slug), exist_ok=True)
-    media = os.path.join(SRC, slug, 'media')
+    media = next(d for d in (os.path.join(SRC, slug, 'media'), *(os.path.join(ROOT, 'assets/source', k, slug) for k in ('work', 'lab')))   # old-site folder, or images Juan supplied
+                 if os.path.isdir(d))
     for n in names:
         f = next(x for x in os.listdir(media) if os.path.splitext(x)[0] == n)
         im = Image.open(os.path.join(media, f)).convert('RGBA')

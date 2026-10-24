@@ -15,7 +15,7 @@ COVERS = {
     'chiefchallenges': 'dJFrCFjRd4FfmXCie2dVVdEXoCY.png',
     'coltrane':        'LXtTSmQKTMV6coQuMUpLJGlphIk.png',
     'nocturna':        'Q89pv1sBlG3TrXh9Pz93IeOn4zM.png',
-    'suraja':          'b69wEnTrkOuyqltILNGFDlTrD8.png',
+    'suraja':          ('aSTxMkhr3E5ci3U3uMycznQozr4.png', 'top'),   # chosen by Juan: the deep affection cover; its title is on the top edge: keep it
     'surrealelfs':     'aQtaYlf5m4vPwZvSboLn0PM1Qs.png',
     'rmc':             'ENZ8A6s1M8OUtqJVeoZzQ9wLT7w.png',
     'hule':            'gpyIuovAyqj1WhMemSUhGGMY5S4.png',
@@ -44,7 +44,7 @@ with tempfile.TemporaryDirectory() as tmp:
             sw, sh = map(int, subprocess.run(['ffprobe', '-v', 'error', '-select_streams', 'v:0', '-show_entries', 'stream=width,height', '-of', 'csv=p=0', find(name)], capture_output=True, text=True, check=True).stdout.strip().split(','))
             ih = round(W * sh / sw / 2) * 2; band = (H - ih) // 2
         vf = (f'scale={W}:{ih}:flags=lanczos,pad={W}:{H}:0:{band},fillborders=top={band}:bottom={H - ih - band}:mode=smear' if anchor == 'fit' else
-              f'scale={W}:{H}:force_original_aspect_ratio=increase:flags=lanczos,crop={W}:{H}' + (':0:(ih-oh)/2' if anchor == 'left' else ''))
+              f'scale={W}:{H}:force_original_aspect_ratio=increase:flags=lanczos,crop={W}:{H}' + {'left': ':0:(ih-oh)/2', 'top': ':(iw-ow)/2:0'}.get(anchor, ''))
         subprocess.run(['ffmpeg', '-loglevel', 'error', '-y', '-i', find(name), '-vf', vf,
                         '-q:v', '3', jpg], check=True)
         out[key] = 'data:image/jpeg;base64,' + base64.b64encode(open(jpg, 'rb').read()).decode()
