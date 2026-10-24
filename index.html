@@ -258,6 +258,53 @@
     .right{grid-column:2} .hero{left:calc(20px + env(safe-area-inset-left));right:calc(20px + env(safe-area-inset-right));top:calc(88px + env(safe-area-inset-top));max-width:none;font-size:clamp(40px,12vw,56px)} .nav{grid-column:1 / span 2;grid-row:3} .nav button{padding:9px 12px;font-size:13px}
     .brand p{display:none} .brand .name,.brand .paren{font-size:20px}
   }
+  /* ---- phone menu: the name and the menu move into one glass bar at the bottom, the name in its centre; the two-line icon opens the bar
+     upward into the full menu. The day/night switch is a round button beside the bar, one tap flips it */
+  .mb,.mb-mode{display:none}
+  @media (max-width:700px){
+    .brand,.nav,.mode{display:none}
+    .mb{display:flex;position:fixed;left:calc(20px + env(safe-area-inset-left));right:calc(20px + env(safe-area-inset-right));bottom:calc(20px + env(safe-area-inset-bottom));gap:10px;align-items:flex-end}
+    .mbar{flex:1;min-width:0;border-radius:28px;display:grid;grid-template-rows:0fr auto;transition:grid-template-rows .55s cubic-bezier(.2,.8,.2,1)}
+    .mbar.open{grid-template-rows:1fr auto}
+    .role,.cue{transition:opacity .3s ease} body.mbopen .role,body.mbopen .cue{opacity:0!important;pointer-events:none}   /* the lines above the bar step aside while it's open */
+    .mb-menu{overflow:hidden;min-height:0}
+    .mb-menu ul{list-style:none;padding:22px 26px 4px}
+    .mb-menu button{all:unset;cursor:pointer;display:block;padding:5px 0;font:500 36px/1.12 var(--f-display);letter-spacing:-.025em;color:#fff;opacity:0;transform:translateY(14px);
+      transition:opacity .2s ease,transform .2s ease}
+    .mbar.open .mb-menu button{opacity:1;transform:none;transition:opacity .4s ease,transform .6s cubic-bezier(.2,.8,.2,1)}
+    .mbar.open .mb-menu li:nth-child(1) button{transition-delay:.08s} .mbar.open .mb-menu li:nth-child(2) button{transition-delay:.13s}
+    .mbar.open .mb-menu li:nth-child(3) button{transition-delay:.18s} .mbar.open .mb-menu li:nth-child(4) button{transition-delay:.23s}
+    .mb-menu .w{position:relative}
+    .mb-menu .p{position:absolute;top:-.1em;font-weight:300;opacity:0;transition:opacity .3s ease}   /* the section you're in wears the brand brackets */
+    .mb-menu .p.l{right:100%} .mb-menu .p.r{left:100%}
+    .mb-menu button[aria-current] .p{opacity:.72}
+    .mb-menu button:focus-visible{outline:1.5px solid #fff;outline-offset:4px;border-radius:6px}
+    .mb-row{display:grid;grid-template-columns:44px 1fr 44px;align-items:center;height:56px;padding:0 6px}
+    .mb-burger,.mb-mode{all:unset;cursor:pointer;place-items:center;border-radius:999px;color:#fff;transition:transform .2s cubic-bezier(.3,1.6,.5,1)}
+    .mb-burger{display:grid;width:44px;height:44px} .mb-mode{display:none} .mb-burger:active,.mb-mode:active{transform:scale(.92)}
+    .mb-burger svg{width:22px;height:22px;overflow:visible}
+    .mb-burger path{transform-box:view-box;transform-origin:12px 12px;transition:transform .5s cubic-bezier(.3,1.3,.5,1)}
+    .mbar.open .mb-burger .l1{transform:translateY(3px) rotate(45deg)} .mbar.open .mb-burger .l2{transform:translateY(-3px) rotate(-45deg)}
+    .mb-logo{all:unset;cursor:pointer;justify-self:center;white-space:nowrap;font-family:var(--f-display);font-size:18px;letter-spacing:-.025em;line-height:1;color:#fff}
+    .mb-logo .paren{font-weight:300;color:rgba(255,255,255,.72);margin-left:2px}
+    .mb-burger:focus-visible,.mb-mode:focus-visible,.mb-logo:focus-visible{outline:1.5px solid #fff;outline-offset:2px} .mb-logo:focus-visible{border-radius:6px;outline-offset:6px}
+    /* the round switch shows the scene you're in, and a tap turns the sun into the moon and back */
+    .mb-mode{display:grid;flex:none;width:56px;height:56px;position:relative}
+    .mb-mode svg{position:absolute;width:20px;height:20px;transition:transform .6s cubic-bezier(.3,1.4,.5,1),opacity .3s ease}
+    .mb-mode .sun{transform:rotate(-90deg) scale(.4);opacity:0} .mb-mode.day .sun{transform:none;opacity:1} .mb-mode.day .moon{transform:rotate(60deg) scale(.4);opacity:0}
+    /* the white scene, the white project page and the first load, as for the menu it replaces */
+    body.bright .mb-logo,body.bright .mb-logo .paren,body.bright .mb-burger,body.bright .mb-mode,body.bright .mb-menu button{color:#111316}
+    body.inproj .ui .mb{pointer-events:auto} body.inproj .mb-mode{display:none!important}
+    body.inproj .mbar{background:rgba(255,255,255,.62);-webkit-backdrop-filter:blur(16px) saturate(1.8);backdrop-filter:blur(16px) saturate(1.8);
+      box-shadow:inset 0 1px 0 rgba(255,255,255,.95),inset 0 0 0 1px rgba(17,19,22,.07),0 12px 32px -10px rgba(17,19,22,.28);animation:navIn .7s cubic-bezier(.2,.8,.2,1) both}
+    body.inproj .mb-logo,body.inproj .mb-logo .paren,body.inproj .mb-burger,body.inproj .mb-menu button{color:#111316}
+    body.inproj .mb-burger:focus-visible,body.inproj .mb-logo:focus-visible,body.inproj .mb-menu button:focus-visible{outline-color:#111316}
+    html.intro .mb{transform:translateY(calc(100% + 40px + env(safe-area-inset-bottom)))} html.intro-run .mb{transition:transform 1.1s cubic-bezier(.16,1,.3,1) 1.95s}
+  }
+  @media (max-width:700px) and (prefers-reduced-motion:reduce){
+    .mbar,.mb,.mb-burger path,.mb-mode svg{transition:none!important} .mb-menu button{transform:none!important}
+    html.intro .mb{transform:none;opacity:0} html.intro-run .mb{transition:opacity .4s ease 1.3s} body.inproj .mbar{animation:none}
+  }
   .hero,.brand .name,.brand .paren,.panel h2,#crawl h2,#foot h2,.links b,#cardInfo .ci-t{font-family:var(--f-display)}   /* Brulia has one weight: no faux bold (body sets font-synthesis:none) */
   /* ---- first load: a white loader (huge count + bar) fades over the scene's own white void, which then opens from the centre with the cloudy edge of the grass-to-water vignette; then the name and the hero line fly in, the menu rises, the mode switch drops */
   #loader{position:fixed;inset:0;z-index:20;background:#fff;color:#111316}
@@ -362,6 +409,22 @@ void main(){vec2 wq=(vUv-0.5)*vec2(uRes.x/uRes.y,1.);float wl=length(wq);
   <nav class="nav glass" aria-label="Main">
     <button data-k="about"><span class="w"><span class="p l" aria-hidden="true">(</span>About<span class="p r" aria-hidden="true">)</span></span></button><button data-k="lab"><span class="w"><span class="p l" aria-hidden="true">(</span>Lab<span class="p r" aria-hidden="true">)</span></span></button><button data-k="work"><span class="w"><span class="p l" aria-hidden="true">(</span>Work<span class="p r" aria-hidden="true">)</span></span></button><button data-k="art"><span class="w"><span class="p l" aria-hidden="true">(</span>Art<span class="p r" aria-hidden="true">)</span></span></button>
   </nav>
+  <div class="mb">   <!-- phone menu (see the .mb styles) -->
+    <div class="mbar glass">
+      <nav class="mb-menu" id="mbMenu" aria-label="Main"><ul>
+        <li><button data-k="about"><span class="w"><span class="p l" aria-hidden="true">(</span>About<span class="p r" aria-hidden="true">)</span></span></button></li>
+        <li><button data-k="lab"><span class="w"><span class="p l" aria-hidden="true">(</span>Lab<span class="p r" aria-hidden="true">)</span></span></button></li>
+        <li><button data-k="work"><span class="w"><span class="p l" aria-hidden="true">(</span>Work<span class="p r" aria-hidden="true">)</span></span></button></li>
+        <li><button data-k="art"><span class="w"><span class="p l" aria-hidden="true">(</span>Art<span class="p r" aria-hidden="true">)</span></span></button></li>
+      </ul></nav>
+      <div class="mb-row">
+        <button class="mb-burger" aria-expanded="false" aria-controls="mbMenu" aria-label="Menu"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path class="l1" d="M4 9h16"/><path class="l2" d="M4 15h16"/></svg></button>
+        <a class="mb-logo" href="#" aria-label="Juangarcia(mx), back to the top"><span class="name">Juangarcia</span><span class="paren">(mx)</span></a>
+        <span aria-hidden="true"></span>
+      </div>
+    </div>
+    <button class="mb-mode glass" aria-label="Switch to day"><svg class="moon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"><path d="M20 14.5A8.5 8.5 0 0 1 9.5 4a8.5 8.5 0 1 0 10.5 10.5z"/></svg><svg class="sun" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><circle cx="12" cy="12" r="4.2"/><path d="M12 2.5v2.2M12 19.3v2.2M2.5 12h2.2M19.3 12h2.2M5.3 5.3l1.6 1.6M17.1 17.1l1.6 1.6M5.3 18.7l1.6-1.6M17.1 6.9l1.6-1.6"/></svg></button>
+  </div>
   <p class="role">Visual Designer, <span>based in San Francisco</span></p>
   <button class="cue" aria-label="Scroll down to About"><span class="t"><span class="b">(</span>Scroll down<span class="b">)</span></span><i aria-hidden="true"><svg viewBox="0 0 14 28" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M7 2v23M1.5 19.5 7 25l5.5-5.5"/></svg></i></button>
 </div>
@@ -1298,7 +1361,7 @@ const toast=document.getElementById('toast');let tt;
 function say(m){toast.textContent=m;toast.classList.add('on');clearTimeout(tt);tt=setTimeout(()=>toast.classList.remove('on'),1800);}
 /* scroll story v3 (grey-box): field, About (text out of the head), Lab and Work (camera beside the sculpture, turning to face the hills), Art (camera holds), footer.
    Positions are in screens of scrolling: s = scrollY / screen height */
-const uiEl=document.querySelector('.ui'),uiFade=[...uiEl.children].filter(el=>!el.matches('.nav,.right,.brand')),crawl=document.getElementById('crawl'),crawlTxts=[...crawl.querySelectorAll('.txt')],foot=document.getElementById('foot'),dbg=document.getElementById('dbg');
+const uiEl=document.querySelector('.ui'),uiFade=[...uiEl.children].filter(el=>!el.matches('.nav,.right,.brand,.mb')),crawl=document.getElementById('crawl'),crawlTxts=[...crawl.querySelectorAll('.txt')],foot=document.getElementById('foot'),dbg=document.getElementById('dbg');
 const tLab=document.getElementById('tLab'),tWork=document.getElementById('tWork'),tArt=document.getElementById('tArt'),seeMore=document.getElementById('seeMore');
 const CARD_BASE=0.75;   // m between the water (or grass) and a card's bottom edge (was 0.35); the name and year rise with it
 const LABEL_H=0.24,LABEL_GAP=0.4,TITLE_UP=1.95;   // LABEL_GAP: m between the card's top edge and its year (was 0.12)   // m: height of a project name above its card (font size in the scene); how far above the card the LAB / WORK title sits (clear of the name and year)
@@ -1433,6 +1496,22 @@ document.querySelector('.brand .home').addEventListener('click',e=>{e.preventDef
 foot.querySelector('.top').addEventListener('click',()=>travel(0));
 // inside a project the menu closes it first (the camera flies out of its card), then goes where it points
 document.querySelectorAll('.nav button').forEach(b=>b.addEventListener('click',()=>{const k=b.dataset.k,go=()=>{if(JUMP[k])travel(JUMP[k]());glow=1.6;};if(OPEN.it)closeProject(go);else go();}));
+// phone menu (see the .mb styles): the bar's items press the real menu, name and switch, so they go exactly where those go
+{const mb=document.querySelector('.mb'),bar=mb.querySelector('.mbar'),burger=mb.querySelector('.mb-burger'),menu=mb.querySelector('.mb-menu'),flip=mb.querySelector('.mb-mode'),navEl=document.querySelector('.nav');
+  const isOpen=()=>bar.classList.contains('open');
+  const setOpen=o=>{bar.classList.toggle('open',o);document.body.classList.toggle('mbopen',o);burger.setAttribute('aria-expanded',o);burger.setAttribute('aria-label',o?'Close menu':'Menu');menu.inert=!o;
+    if(o)menu.querySelector('button').focus({preventScroll:true});};
+  menu.inert=true;
+  burger.addEventListener('click',()=>setOpen(!isOpen()));
+  menu.querySelectorAll('button').forEach(b=>b.addEventListener('click',()=>{setOpen(false);burger.focus({preventScroll:true});navEl.querySelector(`[data-k="${b.dataset.k}"]`).click();}));
+  mb.querySelector('.mb-logo').addEventListener('click',e=>{e.preventDefault();setOpen(false);document.querySelector('.brand .home').click();});
+  addEventListener('pointerdown',e=>{if(isOpen()&&!mb.contains(e.target))setOpen(false);},true);   // a tap anywhere else folds it away
+  addEventListener('keydown',e=>{if(e.key==='Escape'&&isOpen()){e.stopImmediatePropagation();setOpen(false);burger.focus();}},true);   // Esc closes the menu before it does anything else
+  const mirror=()=>menu.querySelectorAll('button').forEach(b=>b.toggleAttribute('aria-current',!!navEl.querySelector(`[data-k="${b.dataset.k}"][aria-current]`)));
+  new MutationObserver(mirror).observe(navEl,{subtree:true,attributes:true,attributeFilter:['aria-current']});mirror();
+  const sync=()=>{const n=document.body.classList.contains('night');flip.classList.toggle('day',!n);flip.setAttribute('aria-label',n?'Switch to day':'Switch to night');};
+  flip.addEventListener('click',()=>(document.body.classList.contains('night')?bDay:bNight).click());
+  new MutationObserver(sync).observe(document.body,{attributes:true,attributeFilter:['class']});sync();}
 seeMore.addEventListener('click',()=>say('(Work) full list: a later step'));
 addEventListener('keydown',e=>{if(e.key!=='Escape')return;if(OPEN.it)closeProject();else if(scrollY>0)travel(0);});   // Esc closes an open project first
 {const h=Object.keys(JUMP).find(k=>location.hash.includes(k));if(h)setTimeout(()=>travel(JUMP[h]()),600);}
@@ -1444,7 +1523,7 @@ const DEBUG=/debug/.test(location.search),SHOT=/shot/.test(location.search);if(D
 if(DEBUG)window.__jg={ITEMS,OPEN,PREV,CUT,openProject,closeProject,goNext,goU:u=>scrollTo(0,sForU(u)*unitH())};   // ?debug: handles for testing from the console   // ?shot: no easing, for screenshots
 {const m=SHOT&&location.search.match(/[?&]s=([\d.]+)/);if(m)setTimeout(()=>{story.p=+m[1];},300);}   // ?shot&s=2.1: show a scroll position without scrolling (headless screenshots capture the top of the page)
 
-const GLASS=[[document.querySelector('.mode'),document.querySelector('.right'),12],[document.querySelector('.nav'),document.querySelector('.nav'),12]]   // last value: blur radius (CSS px);
+const GLASS=[[document.querySelector('.mode'),document.querySelector('.right'),12],[document.querySelector('.nav'),document.querySelector('.nav'),12],[document.querySelector('.mbar'),document.querySelector('.mbar'),12],[document.querySelector('.mb-mode'),document.querySelector('.mb-mode'),12]]   // the phone bar and its round switch take the slots the hidden menu frees; last value: blur radius (CSS px);
 /* ---------- loop ---------- */
 const THETA0=0.63+TURN,par={x:0,y:0},focus={v:0,h:0};let t0=performance.now(),prev=t0,frames=0;
 function lerpAng(a,b,k){let d=((b-a+Math.PI)%(2*Math.PI)+2*Math.PI)%(2*Math.PI)-Math.PI;return a+d*k;}
