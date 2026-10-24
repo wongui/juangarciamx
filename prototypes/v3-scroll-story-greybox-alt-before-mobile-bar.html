@@ -186,6 +186,12 @@
   #proj .lk:focus-visible{outline:1.5px solid currentColor;outline-offset:3px}
   #proj .media{position:relative;margin:0 var(--g);border-radius:28px;overflow:hidden;aspect-ratio:16/9;background:#f1f1f0;display:grid;place-items:center;color:#5b5f66;font-size:14px}
   #proj .media video,#proj .media img{width:100%;height:100%;object-fit:cover;display:block}
+  /* a vertical video: on desktop it stands in a tall frame at its own shape (9:16, at most 86% of the screen's height) on the left, with the overview
+     beside it, held in view while the video scrolls past; on phones it runs the full width at its own shape, the overview under it */
+  #proj .duo{display:grid;grid-template-columns:auto minmax(0,1fr);gap:clamp(32px,5vw,96px);align-items:start;padding:0 var(--g)}
+  #proj .duo .media{margin:0;aspect-ratio:9/16;height:min(86vh,1100px);width:auto}
+  #proj .duo .intro{grid-template-columns:1fr;gap:20px;padding:clamp(24px,6vh,72px) 0 0;position:sticky;top:calc(96px + env(safe-area-inset-top))}
+  @media (max-width:700px){#proj .duo{grid-template-columns:1fr;gap:0;padding:0}#proj .duo .media{margin:0 var(--g);height:auto;width:auto}#proj .duo .intro{position:static;padding:clamp(64px,12vh,140px) var(--g) clamp(48px,9vh,110px)}}
   #proj .intro,#proj .blk{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,2fr);gap:24px;padding:clamp(64px,12vh,140px) var(--g) clamp(48px,9vh,110px)}
   #proj .blk{padding-top:clamp(40px,8vh,96px)}
   #proj .intro h2{font-family:var(--f-display);font-size:clamp(32px,4.4vw,64px);font-weight:500;letter-spacing:-.025em;line-height:1.08;max-width:18ch;margin-bottom:28px}
@@ -972,6 +978,7 @@ const PAGE={
 for(const it of ITEMS){const P=PAGE[COVER[it.t]];if(P&&P.year)it.y=P.year;}
 const CONTACT={mail:'juangarcia.mx.info@gmail.com',links:[['LinkedIn','https://www.linkedin.com/in/juangarciamx'],['Instagram','https://www.instagram.com/juangarcia.arte']]};   // from the footer on juangarcia.mx
 // card previews (tools/card_videos.sh): a short, silent, card-shaped cut of each video that starts PREV_AT s into it, so the page's video can carry on from the same frame
+const VERTICAL=new Set(['hule','luum','nocturna','surrealelfs']);   // projects whose video is vertical (9:16): their page sets it beside the overview
 const PREV_AT=2,prevSrc=slug=>VIDEO[slug]?`assets/data/card-video-${slug}.mp4`:null,fullSrc=slug=>`assets/data/video-${slug}.mp4`;
 const OPEN={it:null,k:0,dir:0,dur:1.7,back:1.2,e0:null,fly:null,shown:false,after:null},projEl=document.getElementById('proj'),xBtn=document.querySelector('.ui .x');   // dur / back: s for the fly-in / fly-out
 const KIND={lab:'(Lab)',work:'(Work)',art:'(Art)'},nextOf=it=>ITEMS[(it.i+1)%ITEMS.length],pad2=n=>String(n).padStart(2,'0');
@@ -986,8 +993,8 @@ function pageHTML(it){const slug=COVER[it.t],P=PAGE[slug]||{},L=LIVE[slug],nx=ne
   const gal=(P.gal||[]).map(row=>`<div class="gal" style="--n:${row.length}">${row.map(([f,alt])=>`<figure class="rv"><img src="assets/data/gallery/${slug}/${f}.jpg" alt="${esc(alt)}" loading="lazy" decoding="async"></figure>`).join('')}</div>`).join('');
   return `<header class="head"><div class="kind rise" style="--d:.05s"><span>${KIND[it.k]} ${esc(it.y)}</span><span>${pad2(it.i+1)} / ${pad2(ITEMS.length)}</span></div><h1>${esc(it.t)}</h1>
     <div class="facts rise" style="--d:.4s">${facts}${link?lk(link):''}</div></header>
-  <div class="media rise" style="--d:.55s"></div>
-  <section class="intro rv"><div class="lbl">(Overview)</div><div>${P.line?`<h2>${esc(P.line)}</h2>`:''}${over}</div></section>
+  ${VERTICAL.has(slug)&&VIDEO[slug]?'<div class="duo">':''}<div class="media rise" style="--d:.55s"></div>
+  <section class="intro rv"><div class="lbl">(Overview)</div><div>${P.line?`<h2>${esc(P.line)}</h2>`:''}${over}</div></section>${VERTICAL.has(slug)&&VIDEO[slug]?'</div>':''}
   ${blocks}${links}${gal}
   <div class="end"><div class="st"><footer class="talk rv" aria-label="Contact"><h2>Let's create something exciting together</h2>
     <div class="ways"><a class="mail" href="mailto:${CONTACT.mail}">${CONTACT.mail}</a><ul>${CONTACT.links.map(([t,u])=>`<li>${lk([`(${t})`,u])}</li>`).join('')}</ul></div></footer>
